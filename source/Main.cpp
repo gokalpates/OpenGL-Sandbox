@@ -8,12 +8,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Callback.h" //Includes definition of windowSizeCallback nothing more.
+#include "Callback.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "VertexArrayObject.h"
 #include "ElementBufferObject.h"
 #include "VertexBufferObject.h"
+#include "Camera.h"
+
+float deltaTime = 0.f, currentFrame, lastFrame = 0.f;
 
 int main()
 {
@@ -43,7 +46,7 @@ int main()
 		std::exit(EXIT_FAILURE);
 	}
 
-	glClearColor(0.4f, 0.f, 0.f, 1.f);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 
 	Shader program("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
 
@@ -123,10 +126,16 @@ int main()
 	program.use();
 	program.setInt("texture0", 0);
 
+	Camera camera(window);
+
 	glEnable(GL_DEPTH_TEST);
 
 	while (!glfwWindowShouldClose(window))
 	{
+		currentFrame = (float)glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		glfwPollEvents();
 
 		//Update start.
@@ -134,11 +143,12 @@ int main()
 		if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			glfwSetWindowShouldClose(window, true);
 
+		camera.update();
+
 		glm::mat4 model(1.f);
-		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.f, 0.5f, 0.f));
 
 		glm::mat4 view(1.f);
-		view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
+		view = camera.getViewMatrix();
 
 		glm::mat4 projection(1.f);
 		projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeigth, 0.1f, 100.f);
@@ -146,6 +156,7 @@ int main()
 		program.setMat4("model", model);
 		program.setMat4("view", view);
 		program.setMat4("projection", projection);
+
 		//Update end.
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

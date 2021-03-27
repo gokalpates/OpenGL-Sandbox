@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\ElementBufferObject.cpp" />
     <ClCompile Include="source\Debug.cpp" />
     <ClCompile Include="source\Shader.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="source\VertexBufferObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ElementBufferObject.h" />
     <ClInclude Include="include\Debug.h" />
     <ClInclude Include="include\Callback.h" />
