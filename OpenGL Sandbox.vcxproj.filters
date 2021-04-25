@@ -93,7 +93,8 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\fragmentShader.frag" />
-    <None Include="shaders\vertexShader.vert" />
+    <None Include="shaders\illuminated.frag" />
+    <None Include="shaders\vertex.vert" />
+    <None Include="shaders\lightSource.frag" />
   </ItemGroup>
 </Project>

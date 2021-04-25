@@ -173,8 +173,9 @@
     <Image Include="resources\ziya.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\fragmentShader.frag" />
-    <None Include="shaders\vertexShader.vert" />
+    <None Include="shaders\illuminated.frag" />
+    <None Include="shaders\lightSource.frag" />
+    <None Include="shaders\vertex.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

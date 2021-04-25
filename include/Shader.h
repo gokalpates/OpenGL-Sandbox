@@ -25,6 +25,7 @@ public:
 	void setFloat(const char* name, float value) const;
 	void setInt(const char* name, int value) const;
 	void setMat4(const char* name, glm::mat4& matrices) const;
+	void setVec3(const char* name, glm::vec3& vector) const;
 private:
 	unsigned int m_shaderId;
 };

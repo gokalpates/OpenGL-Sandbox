@@ -47,88 +47,85 @@ int main()
 	}
 
 	glClearColor(0.f, 0.f, 0.f, 1.f);
-
-	Shader program("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
+	glEnable(GL_DEPTH_TEST);
 
 	std::vector<float> vertices = {
-	-0.5f, -0.5f, -0.5f,  0.f, 0.f, 0.f,   0.0f, 0.0f,
-	 0.5f, -0.5f, -0.5f,  0.f, 0.f, 1.f,   1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  0.f, 1.f, 0.f,   1.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  0.f, 1.f, 1.f,   1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  1.f, 0.f, 0.f,   0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.f, 0.f, 1.f,   0.0f, 0.0f,
+	// Vertex Positions in local space.
+	-0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,
+	-0.5f,  0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
 
-	-0.5f, -0.5f,  0.5f,  0.f, 0.f, 0.f,   0.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  0.f, 0.f, 1.f,   1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  0.f, 1.f, 0.f,   1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.f, 1.f, 1.f,   1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  1.f, 0.f, 0.f,   0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  1.f, 0.f, 1.f,   0.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,
+	 0.5f, -0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f,
+	-0.5f, -0.5f,  0.5f,
 
-	-0.5f,  0.5f,  0.5f,  0.f, 0.f, 0.f,   1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  0.f, 0.f, 1.f,   1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.f, 1.f, 0.f,   0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.f, 1.f, 1.f,   0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  1.f, 0.f, 0.f,   0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  1.f, 0.f, 1.f,   1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f,
 
-	 0.5f,  0.5f,  0.5f,  0.f, 0.f, 0.f,   1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  0.f, 0.f, 1.f,   1.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.f, 1.f, 0.f,   0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.f, 1.f, 1.f,   0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  1.f, 0.f, 0.f,   0.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.f, 0.f, 1.f,   1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
 
-	-0.5f, -0.5f, -0.5f,  0.f, 0.f, 0.f,   0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.f, 0.f, 1.f,   1.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.f, 1.f, 0.f,   1.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  0.f, 1.f, 1.f,   1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,  1.f, 0.f, 0.f,   0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,  1.f, 0.f, 1.f,   0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,
+	 0.5f, -0.5f,  0.5f,
+	-0.5f, -0.5f,  0.5f,
+	-0.5f, -0.5f, -0.5f,
 
-	-0.5f,  0.5f, -0.5f,  0.f, 0.f, 0.f,   0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  0.f, 0.f, 1.f,   1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.f, 1.f, 0.f,   1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  0.f, 1.f, 1.f,   1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  1.f, 0.f, 0.f,   0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  1.f, 0.f, 1.f,   0.0f, 1.0f
+	-0.5f,  0.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f, -0.5f
 	};
 
-	std::vector<unsigned int> drawIndices = {
-		0,1,2, //First triangle
-		3,2,0  //Second triangle
-	};
+	VertexArrayObject lightSourceVAO;
+	lightSourceVAO.bind();
 
-	VertexArrayObject testVao;
-	testVao.bind();
+	VertexBufferObject lightSourceVBO(vertices);
+	lightSourceVBO.bind();
 
-	VertexBufferObject testVbo(vertices);
-	testVbo.bind();
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	lightSourceVBO.unbind();
+	lightSourceVAO.unbind();
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	VertexArrayObject illuminatedVAO;
+	illuminatedVAO.bind();
 
-	ElementBufferObject testEbo(drawIndices);
-	testEbo.bind();
+	VertexBufferObject illuminatedVBO(vertices);
+	illuminatedVBO.bind();
 
-	testVbo.unbind();
-	testVao.unbind();
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
+	glEnableVertexAttribArray(0);
 
-	Texture testTexture("resources/texture.jpg");
-	testTexture.bind();
-	testVao.bind();
-	program.use();
-	program.setInt("texture0", 0);
+	illuminatedVBO.unbind();
+	illuminatedVAO.unbind();
+
+	Shader lightSourceShader("shaders/vertex.vert", "shaders/lightSource.frag");
+	Shader illuminatedObjectShader("shaders/vertex.vert", "shaders/illuminated.frag");
 
 	Camera camera(window);
 
-	glEnable(GL_DEPTH_TEST);
+	glm::vec3 objectColor(0.31f, 0.69f, 0.42f);
+	glm::vec3 lightColor(0.2f, 0.4f, 0.9f);
+	glm::vec3 lightPosition(1.2f, 1.0f, 2.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -137,15 +134,18 @@ int main()
 		lastFrame = currentFrame;
 
 		glfwPollEvents();
-
-		//Update start.
-
-		if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			glfwSetWindowShouldClose(window, true);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		camera.update();
 
+		//Draw light source.
+
 		glm::mat4 model(1.f);
+		model = glm::translate(model, lightPosition);
+		model = glm::scale(model, glm::vec3(0.2));
 
 		glm::mat4 view(1.f);
 		view = camera.getViewMatrix();
@@ -153,14 +153,28 @@ int main()
 		glm::mat4 projection(1.f);
 		projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeigth, 0.1f, 100.f);
 
-		program.setMat4("model", model);
-		program.setMat4("view", view);
-		program.setMat4("projection", projection);
+		lightSourceShader.use();
+		lightSourceShader.setMat4("model", model);
+		lightSourceShader.setMat4("view", view);
+		lightSourceShader.setMat4("projection", projection);
+		lightSourceShader.setVec3("lightColor", lightColor);
 
-		//Update end.
+		lightSourceVAO.bind();
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//Draw illuminated object.
+		
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(0.f));
 
+		illuminatedObjectShader.use();
+		illuminatedObjectShader.setMat4("model", model);
+		illuminatedObjectShader.setMat4("view", view);
+		illuminatedObjectShader.setMat4("projection", projection);
+		illuminatedObjectShader.setVec3("lightColor", lightColor);
+		illuminatedObjectShader.setVec3("objectColor", objectColor);
+
+		illuminatedVAO.bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
