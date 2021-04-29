@@ -31,6 +31,11 @@ glm::mat4 Camera::getViewMatrix() const
 	return glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
 }
 
+glm::vec3 Camera::getCameraPosition() const
+{
+	return cameraPosition;
+}
+
 void Camera::update()
 {
 	processMouse(cameraWindow);

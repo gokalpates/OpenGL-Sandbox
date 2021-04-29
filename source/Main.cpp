@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "Callback.h"
 #include "Shader.h"
@@ -20,6 +21,8 @@ float deltaTime = 0.f, currentFrame, lastFrame = 0.f;
 
 int main()
 {
+	srand(time(nullptr));
+
 	int windowWidth = 2560, windowHeigth = 1440;
 
 	glfwInit();
@@ -51,47 +54,47 @@ int main()
 
 	std::vector<float> vertices = {
 	// Vertex Positions in local space.
-	-0.5f, -0.5f, -0.5f,
-	 0.5f, -0.5f, -0.5f,
-	 0.5f,  0.5f, -0.5f,
-	 0.5f,  0.5f, -0.5f,
-	-0.5f,  0.5f, -0.5f,
-	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-	-0.5f, -0.5f,  0.5f,
-	 0.5f, -0.5f,  0.5f,
-	 0.5f,  0.5f,  0.5f,
-	 0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f,  0.5f,
-	-0.5f, -0.5f,  0.5f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-	-0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f, -0.5f,
-	-0.5f, -0.5f, -0.5f,
-	-0.5f, -0.5f, -0.5f,
-	-0.5f, -0.5f,  0.5f,
-	-0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-	 0.5f,  0.5f,  0.5f,
-	 0.5f,  0.5f, -0.5f,
-	 0.5f, -0.5f, -0.5f,
-	 0.5f, -0.5f, -0.5f,
-	 0.5f, -0.5f,  0.5f,
-	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-	-0.5f, -0.5f, -0.5f,
-	 0.5f, -0.5f, -0.5f,
-	 0.5f, -0.5f,  0.5f,
-	 0.5f, -0.5f,  0.5f,
-	-0.5f, -0.5f,  0.5f,
-	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-	-0.5f,  0.5f, -0.5f,
-	 0.5f,  0.5f, -0.5f,
-	 0.5f,  0.5f,  0.5f,
-	 0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f, -0.5f
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
 
 	VertexArrayObject lightSourceVAO;
@@ -100,7 +103,7 @@ int main()
 	VertexBufferObject lightSourceVBO(vertices);
 	lightSourceVBO.bind();
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(0));
 	glEnableVertexAttribArray(0);
 
 	lightSourceVBO.unbind();
@@ -109,13 +112,15 @@ int main()
 	VertexArrayObject illuminatedVAO;
 	illuminatedVAO.bind();
 
-	VertexBufferObject illuminatedVBO(vertices);
-	illuminatedVBO.bind();
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
+	lightSourceVBO.bind();
+	
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(0));
 	glEnableVertexAttribArray(0);
 
-	illuminatedVBO.unbind();
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	lightSourceVBO.unbind();
 	illuminatedVAO.unbind();
 
 	Shader lightSourceShader("shaders/vertex.vert", "shaders/lightSource.frag");
@@ -123,9 +128,17 @@ int main()
 
 	Camera camera(window);
 
-	glm::vec3 objectColor(0.31f, 0.69f, 0.42f);
-	glm::vec3 lightColor(0.2f, 0.4f, 0.9f);
-	glm::vec3 lightPosition(1.2f, 1.0f, 2.0f);
+	glm::vec3 objectColor(1.f, 0.5f, 0.31f);
+	glm::vec3 lightColor(1.f, 1.f, 1.f);
+	glm::vec3 lightPosition(2.0, 1.f, 1.5f);
+	glm::vec3 viewPosition = camera.getCameraPosition();
+
+	lightSourceShader.use();
+	lightSourceShader.setVec3("lightColor", lightColor);
+
+	illuminatedObjectShader.use();
+	illuminatedObjectShader.setVec3("objectColor", objectColor);
+	illuminatedObjectShader.setVec3("lightColor", lightColor);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -141,7 +154,11 @@ int main()
 
 		camera.update();
 
-		//Draw light source.
+		//Draw light source;
+		float lightX = 2.0f * sin(glfwGetTime());
+		float lightY = -0.5f;
+		float lightZ = 1.5f * cos(glfwGetTime());
+		lightPosition = glm::vec3(lightX, lightY, lightZ);
 
 		glm::mat4 model(1.f);
 		model = glm::translate(model, lightPosition);
@@ -157,7 +174,6 @@ int main()
 		lightSourceShader.setMat4("model", model);
 		lightSourceShader.setMat4("view", view);
 		lightSourceShader.setMat4("projection", projection);
-		lightSourceShader.setVec3("lightColor", lightColor);
 
 		lightSourceVAO.bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -171,8 +187,10 @@ int main()
 		illuminatedObjectShader.setMat4("model", model);
 		illuminatedObjectShader.setMat4("view", view);
 		illuminatedObjectShader.setMat4("projection", projection);
-		illuminatedObjectShader.setVec3("lightColor", lightColor);
-		illuminatedObjectShader.setVec3("objectColor", objectColor);
+
+		viewPosition = camera.getCameraPosition();
+		illuminatedObjectShader.setVec3("viewPosition", viewPosition);
+		illuminatedObjectShader.setVec3("lightPosition", lightPosition);
 
 		illuminatedVAO.bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);

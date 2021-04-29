@@ -11,6 +11,7 @@ public:
 	Camera(GLFWwindow* window);
 
 	glm::mat4 getViewMatrix() const;
+	glm::vec3 getCameraPosition() const;
 	void update();
 
 	void setCameraSpeed(float value = 0.002f);
