@@ -92,9 +92,4 @@
       <Filter>Kaynak Dosyaları</Filter>
     </Image>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\illuminated.frag" />
-    <None Include="shaders\vertex.vert" />
-    <None Include="shaders\lightSource.frag" />
-  </ItemGroup>
 </Project>
