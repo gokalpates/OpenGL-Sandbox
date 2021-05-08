@@ -13,7 +13,15 @@ Texture::Texture(std::filesystem::path texturePath) :
 	unsigned char* textureData = stbi_load(texturePath.string().c_str(), &m_width, &m_height, &m_numberOfChannels, 0);
 	if (textureData)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+		GLenum textureFormat = GL_INVALID_ENUM;
+		if (m_numberOfChannels == 1)
+			textureFormat = GL_RED;
+		else if (m_numberOfChannels == 3)
+			textureFormat = GL_RGB;
+		else if (m_numberOfChannels == 4)
+			textureFormat = GL_RGBA;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, m_width, m_height, 0, textureFormat, GL_UNSIGNED_BYTE, textureData);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
