@@ -19,7 +19,7 @@ uniform Material material;
 
 struct Light
 {
-	vec3 position;
+	vec3 direction;
 
 	vec3 ambient;
 	vec3 diffuse;
@@ -35,7 +35,7 @@ void main()
 
 	//Diffuse light calculation.
 	vec3 normal = normalize(vertexNormal);
-	vec3 lightDirection = normalize(light.position - vertexFragmentPosition);
+	vec3 lightDirection = normalize(light.direction); // People generally negotiate direction vector but we did not.
 
 	float diffValue = max(dot(normal, lightDirection), 0.0);
 	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse,vertexTextureCoordinates).rgb;

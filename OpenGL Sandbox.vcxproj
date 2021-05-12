@@ -167,10 +167,14 @@
     <ClInclude Include="include\VertexBufferObject.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\gocmen.jpg" />
     <Image Include="resources\texture.jpg" />
     <Image Include="resources\wall.jpg" />
-    <Image Include="resources\ziya.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\objectDirectionalLight.frag" />
+    <None Include="shaders\objectDirectionalLight.vert" />
+    <None Include="shaders\objectSpotlight.frag" />
+    <None Include="shaders\objectSpotlight.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

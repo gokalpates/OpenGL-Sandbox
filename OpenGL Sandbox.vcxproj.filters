@@ -85,11 +85,11 @@
     <Image Include="resources\wall.jpg">
       <Filter>Kaynak Dosyaları</Filter>
     </Image>
-    <Image Include="resources\gocmen.jpg">
-      <Filter>Kaynak Dosyaları</Filter>
-    </Image>
-    <Image Include="resources\ziya.jpg">
-      <Filter>Kaynak Dosyaları</Filter>
-    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\objectDirectionalLight.vert" />
+    <None Include="shaders\objectDirectionalLight.frag" />
+    <None Include="shaders\objectSpotlight.frag" />
+    <None Include="shaders\objectSpotlight.vert" />
   </ItemGroup>
 </Project>

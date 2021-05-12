@@ -36,6 +36,11 @@ glm::vec3 Camera::getCameraPosition() const
 	return cameraPosition;
 }
 
+glm::vec3 Camera::getCameraFront() const
+{
+	return cameraFront;
+}
+
 void Camera::update()
 {
 	processMouse(cameraWindow);

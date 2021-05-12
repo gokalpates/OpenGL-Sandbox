@@ -141,7 +141,7 @@ int main()
 	lightVAO.unbind();
 
 	// OBJECT
-	Shader objectShader("shaders/object.vert", "shaders/object.frag");
+	Shader objectShader("shaders/objectSpotlight.vert", "shaders/objectSpotlight.frag");
 
 	VertexArrayObject objectVAO;
 	objectVAO.bind();
@@ -181,9 +181,16 @@ int main()
 	glm::vec3 lightColor(1.f, 1.f, 1.f);
 	glm::vec3 lightPosition(2.0, 1.f, 1.5f);
 	glm::vec3 viewPosition(1.f);
+	glm::vec3 viewFront(1.f);
+	float lightInnerCutoff = glm::cos(glm::radians(12.5f));
+	float lightOuterCutoff = glm::cos(glm::radians(17.5f));
 
 	lightShader.use();
 	lightShader.setVec3("light.color", lightColor);
+
+	objectShader.use();
+	objectShader.setFloat("light.innerCutoff", lightInnerCutoff);
+	objectShader.setFloat("light.outerCutoff", lightOuterCutoff);
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeigth, 0.1f, 100.f);
 	while (!glfwWindowShouldClose(window))
@@ -208,11 +215,12 @@ int main()
 		model = glm::translate(model, lightPosition);
 		model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
 		glm::mat4 view = camera.getViewMatrix();
+
 		lightShader.setMat4("model", model);
 		lightShader.setMat4("view", view);
 		lightShader.setMat4("projection", projection);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Draw illuminated object.
 		objectShader.use();
@@ -221,6 +229,7 @@ int main()
 		objectSpecularMap.bind(1);
 
 		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(3.f, 0.f, 3.f));
 		objectShader.setMat4("model", model);
 		objectShader.setMat4("view", view);
 		objectShader.setMat4("projection", projection);
@@ -228,10 +237,16 @@ int main()
 		viewPosition = camera.getCameraPosition();
 		objectShader.setVec3("viewPosition", viewPosition);
 
-		objectShader.setVec3("light.position", lightPosition);
-		objectShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+		viewFront = camera.getCameraFront();
+
+		objectShader.setVec3("light.position", viewPosition);
+		objectShader.setVec3("light.direction", viewFront);
+		objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 		objectShader.setVec3("light.diffuse", 0.7f, 0.7f, 0.7f);
 		objectShader.setVec3("light.specular", 1.f, 1.f, 1.f);
+
+		objectShader.setFloat("light.linear", 0.09f);
+		objectShader.setFloat("light.quadratic", 0.032f);
 
 		objectShader.setFloat("material.shininess", 128.f);
 

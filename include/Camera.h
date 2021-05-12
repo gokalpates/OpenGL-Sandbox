@@ -12,6 +12,7 @@ public:
 
 	glm::mat4 getViewMatrix() const;
 	glm::vec3 getCameraPosition() const;
+	glm::vec3 getCameraFront() const;
 	void update();
 
 	void setCameraSpeed(float value = 0.002f);
