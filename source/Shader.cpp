@@ -86,6 +86,11 @@ void Shader::use() const
 	glUseProgram(m_shaderId);
 }
 
+void Shader::disuse() const
+{
+	glUseProgram(0u);
+}
+
 unsigned int Shader::getShaderId() const
 {
 	return m_shaderId;

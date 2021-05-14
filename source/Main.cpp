@@ -18,13 +18,14 @@
 #include "VertexBufferObject.h"
 #include "Camera.h"
 #include "Debug.h"
+#include "DirectionalLight.h"
+#include "PointLight.h"
+#include "SpotLight.h"
 
 float deltaTime = 0.f, currentFrame, lastFrame = 0.f;
 
 int main()
 {
-	srand(time(nullptr));
-
 	int windowWidth = 2560, windowHeigth = 1440;
 
 	glfwInit();
@@ -54,7 +55,7 @@ int main()
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glEnable(GL_DEPTH_TEST);
 
-	//AXIS
+	//GRIDS
 	std::vector<float> axisVertices = {
 	 100.f,  0.f,  0.f, //X
 	-100.f,  0.f,  0.f,
@@ -79,9 +80,6 @@ int main()
 
 	axisVBO.unbind();
 	axisVAO.unbind();
-
-	// LIGHT
-	Shader lightShader("shaders/light.vert", "shaders/light.frag");
 
 	std::vector<float> cubeVertices = {
 	//Positions			  //Normals			   //Texture Coords.
@@ -128,8 +126,11 @@ int main()
 	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
-	VertexArrayObject lightVAO;
-	lightVAO.bind();
+	//LIGHT SOURCE
+	Shader lightSourceShader("shaders/lightSource.vert", "shaders/lightSource.frag");
+
+	VertexArrayObject lightSourceVAO;
+	lightSourceVAO.bind();
 
 	VertexBufferObject cubeVBO(cubeVertices);
 	cubeVBO.bind();
@@ -138,25 +139,22 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	cubeVBO.unbind();
-	lightVAO.unbind();
+	lightSourceVAO.unbind();
 
-	// OBJECT
-	Shader objectShader("shaders/objectSpotlight.vert", "shaders/objectSpotlight.frag");
+	//CUBE
+	Shader lightingShader("shaders/lighting.vert", "shaders/lighting.frag");
 
 	VertexArrayObject objectVAO;
 	objectVAO.bind();
 
-	//Use shader program and call that we are going to use 0th texture unit slot.
-	objectShader.use();
-	objectShader.setInt("material.diffuse", 0);
+	lightingShader.use();
+	lightingShader.setInt("material.diffuse", 0);
 
-	//Create a texture and bind it to the 0th texture unit.
 	Texture objectDiffuseMap("resources/diffuseMap.png");
 	objectDiffuseMap.bind(0);
 
-	objectShader.setInt("material.specular", 1);
+	lightingShader.setInt("material.specular", 1);
 
-	//Create a texture and bind it to the 1th texture unit.
 	Texture objectSpecularMap("resources/specularMap.png");
 	objectSpecularMap.bind(1);
 
@@ -178,20 +176,30 @@ int main()
 
 	Camera camera(window);
 
-	glm::vec3 lightColor(1.f, 1.f, 1.f);
-	glm::vec3 lightPosition(2.0, 1.f, 1.5f);
-	glm::vec3 viewPosition(1.f);
-	glm::vec3 viewFront(1.f);
-	float lightInnerCutoff = glm::cos(glm::radians(12.5f));
-	float lightOuterCutoff = glm::cos(glm::radians(17.5f));
+	//Numbers of the lights must match with numbers of the lights in fragment shader.
+	DirectionalLight directionalLight(lightingShader);
+	directionalLight.setDirection(glm::vec3(0.f, 0.f, 1.f));
 
-	lightShader.use();
-	lightShader.setVec3("light.color", lightColor);
+	PointLight pointLightOne(lightingShader);
+	pointLightOne.setPosition(glm::vec3(3.f, 0.f, 0.f));
+	pointLightOne.setAmbient(glm::vec3(0.05f, 0.f, 0.f));
+	pointLightOne.setDiffuse(glm::vec3(0.7f, 0.f, 0.f));
+	pointLightOne.setSpecular(glm::vec3(1.f, 0.f, 0.f));
 
-	objectShader.use();
-	objectShader.setFloat("light.innerCutoff", lightInnerCutoff);
-	objectShader.setFloat("light.outerCutoff", lightOuterCutoff);
+	PointLight pointLightTwo(lightingShader);
+	pointLightTwo.setPosition(glm::vec3(-3.f, 0.f, 0.f));
+	pointLightTwo.setAmbient(glm::vec3(0.f, 0.05f, 0.f));
+	pointLightTwo.setDiffuse(glm::vec3(0.f, 0.7f, 0.f));
+	pointLightTwo.setSpecular(glm::vec3(0.f, 1.f, 0.f));
 
+	SpotLight spotLight(lightingShader);
+	spotLight.setPosition(glm::vec3(0.f, 0.f, 3.f));
+	spotLight.setDirection(glm::vec3(0.f, 0.f, -1.f));
+	spotLight.setAmbient(glm::vec3(0.f, 0.f, 0.05f));
+	spotLight.setDiffuse(glm::vec3(0.f, 0.f, 0.7f));
+	spotLight.setSpecular(glm::vec3(0.f, 0.f, 1.f));
+
+	lightingShader.setFloat("material.shininess", 32.f);
 	glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeigth, 0.1f, 100.f);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -203,60 +211,36 @@ int main()
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			glfwSetWindowShouldClose(window, true);
 
+		camera.update();
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		camera.update();
-		
-		//Draw light source.
-		lightShader.use();
-		lightVAO.bind();
-
-		glm::mat4 model(1.f);
-		model = glm::translate(model, lightPosition);
-		model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
+		glm::mat4 model = glm::mat4(1.f);
 		glm::mat4 view = camera.getViewMatrix();
 
-		lightShader.setMat4("model", model);
-		lightShader.setMat4("view", view);
-		lightShader.setMat4("projection", projection);
-
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		//Draw illuminated object.
-		objectShader.use();
+		//DRAW CUBE
+		lightingShader.use();
 		objectVAO.bind();
 		objectDiffuseMap.bind(0);
 		objectSpecularMap.bind(1);
 
 		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(3.f, 0.f, 3.f));
-		objectShader.setMat4("model", model);
-		objectShader.setMat4("view", view);
-		objectShader.setMat4("projection", projection);
 
-		viewPosition = camera.getCameraPosition();
-		objectShader.setVec3("viewPosition", viewPosition);
+		lightingShader.setMat4("model", model);
+		lightingShader.setMat4("view", view);
+		lightingShader.setMat4("projection", projection);
 
-		viewFront = camera.getCameraFront();
-
-		objectShader.setVec3("light.position", viewPosition);
-		objectShader.setVec3("light.direction", viewFront);
-		objectShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-		objectShader.setVec3("light.diffuse", 0.7f, 0.7f, 0.7f);
-		objectShader.setVec3("light.specular", 1.f, 1.f, 1.f);
-
-		objectShader.setFloat("light.linear", 0.09f);
-		objectShader.setFloat("light.quadratic", 0.032f);
-
-		objectShader.setFloat("material.shininess", 128.f);
+		glm::vec3 viewPosition = camera.getCameraPosition();
+		lightingShader.setVec3("viewPosition", viewPosition);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Draw grids.
+		//DRAW GRIDS
 		axisShader.use();
 		axisVAO.bind();
 
 		model = glm::mat4(1.f);
+
 		axisShader.setMat4("model", model);
 		axisShader.setMat4("view", view);
 		axisShader.setMat4("projection", projection);

@@ -143,6 +143,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\PointLight.cpp" />
+    <ClCompile Include="source\DirectionalLight.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\ElementBufferObject.cpp" />
     <ClCompile Include="source\Debug.cpp" />
@@ -154,8 +156,10 @@
     <ClCompile Include="source\Texture.cpp" />
     <ClCompile Include="source\VertexArrayObject.cpp" />
     <ClCompile Include="source\VertexBufferObject.cpp" />
+    <ClCompile Include="source\SpotLight.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\DirectionalLight.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ElementBufferObject.h" />
     <ClInclude Include="include\Debug.h" />
@@ -165,16 +169,16 @@
     <ClInclude Include="include\Texture.h" />
     <ClInclude Include="include\VertexArrayObject.h" />
     <ClInclude Include="include\VertexBufferObject.h" />
+    <ClInclude Include="include\PointLight.h" />
+    <ClInclude Include="include\SpotLight.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\texture.jpg" />
     <Image Include="resources\wall.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\objectDirectionalLight.frag" />
-    <None Include="shaders\objectDirectionalLight.vert" />
-    <None Include="shaders\objectSpotlight.frag" />
-    <None Include="shaders\objectSpotlight.vert" />
+    <None Include="shaders\lighting.frag" />
+    <None Include="shaders\lighting.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,7 +8,6 @@ Texture::Texture(std::filesystem::path texturePath) :
 	glGenTextures(1, &m_textureId);
 	glBindTexture(GL_TEXTURE_2D, m_textureId);
 
-
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char* textureData = stbi_load(texturePath.string().c_str(), &m_width, &m_height, &m_numberOfChannels, 0);
 	if (textureData)

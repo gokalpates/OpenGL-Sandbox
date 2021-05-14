@@ -18,7 +18,8 @@ public:
 	~Shader();
 
 	void use() const;
-	
+	void disuse() const;
+
 	unsigned int getShaderId() const;
 
 	void setBool(const char* name, bool value) const;

@@ -48,6 +48,15 @@
     <ClCompile Include="source\Camera.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="source\DirectionalLight.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PointLight.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SpotLight.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Callback.h">
@@ -77,6 +86,15 @@
     <ClInclude Include="include\Camera.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
+    <ClInclude Include="include\DirectionalLight.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PointLight.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SpotLight.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\texture.jpg">
@@ -87,9 +105,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\objectDirectionalLight.vert" />
-    <None Include="shaders\objectDirectionalLight.frag" />
-    <None Include="shaders\objectSpotlight.frag" />
-    <None Include="shaders\objectSpotlight.vert" />
+    <None Include="shaders\lighting.vert" />
+    <None Include="shaders\lighting.frag" />
   </ItemGroup>
 </Project>
