@@ -167,6 +167,7 @@
     <ClInclude Include="external\include\stb_image.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\Texture.h" />
+    <ClInclude Include="include\Vertex.h" />
     <ClInclude Include="include\VertexArrayObject.h" />
     <ClInclude Include="include\VertexBufferObject.h" />
     <ClInclude Include="include\PointLight.h" />

@@ -150,12 +150,14 @@ int main()
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse", 0);
 
-	Texture objectDiffuseMap("resources/diffuseMap.png");
+	Texture objectDiffuseMap;
+	objectDiffuseMap.loadTextureFromDisk("resources/diffuseMap.png", "diffuseMap");
 	objectDiffuseMap.bind(0);
 
 	lightingShader.setInt("material.specular", 1);
 
-	Texture objectSpecularMap("resources/specularMap.png");
+	Texture objectSpecularMap;
+	objectSpecularMap.loadTextureFromDisk("resources/specularMap.png", "specularMap");
 	objectSpecularMap.bind(1);
 
 	cubeVBO.bind();
