@@ -1,263 +1,111 @@
 #include <iostream>
-#include <thread>
-#include <string>
-#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb_image.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "Callback.h"
 #include "Shader.h"
-#include "Texture.h"
-#include "VertexArrayObject.h"
-#include "ElementBufferObject.h"
-#include "VertexBufferObject.h"
+#include "Model.h"
 #include "Camera.h"
-#include "Debug.h"
-#include "DirectionalLight.h"
-#include "PointLight.h"
-#include "SpotLight.h"
+#include "Grid.h"
 
 float deltaTime = 0.f, currentFrame, lastFrame = 0.f;
 
 int main()
 {
-	int windowWidth = 2560, windowHeigth = 1440;
+    int screenWidth = 2560;
+    int screenHeight = 1440;
 
 	glfwInit();
-	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeigth, "OpenGL", nullptr, nullptr);
-	if (window == nullptr)
-	{
-		std::cout << "ERROR: Program could not create a window: \n";
-		glfwTerminate();
-		std::exit(EXIT_FAILURE);
-	}
-	glfwMakeContextCurrent(window);
-
-	glfwSetWindowSizeCallback(window, windowSizeCallback);
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "ERROR: GLAD could not initialised: \n";
-		glfwTerminate();
-		std::exit(EXIT_FAILURE);
-	}
-
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-	glEnable(GL_DEPTH_TEST);
-
-	//GRIDS
-	std::vector<float> axisVertices = {
-	 100.f,  0.f,  0.f, //X
-	-100.f,  0.f,  0.f,
-
-	 0.f,   100.f, 0.f, //Y
-	 0.f,  -100.f, 0.f,
-
-	 0.f,   0.f, 100.f, //Z
-	 0.f,   0.f,-100.f
-	};
-
-	Shader axisShader("shaders/axis.vert", "shaders/axis.frag");
-
-	VertexArrayObject axisVAO;
-	axisVAO.bind();
-
-	VertexBufferObject axisVBO(axisVertices);
-	axisVBO.bind();
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
-	glEnableVertexAttribArray(0);
-
-	axisVBO.unbind();
-	axisVAO.unbind();
-
-	std::vector<float> cubeVertices = {
-	//Positions			  //Normals			   //Texture Coords.
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-	};
-
-	//LIGHT SOURCE
-	Shader lightSourceShader("shaders/lightSource.vert", "shaders/lightSource.frag");
-
-	VertexArrayObject lightSourceVAO;
-	lightSourceVAO.bind();
-
-	VertexBufferObject cubeVBO(cubeVertices);
-	cubeVBO.bind();
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
-	glEnableVertexAttribArray(0);
-
-	cubeVBO.unbind();
-	lightSourceVAO.unbind();
-
-	//CUBE
-	Shader lightingShader("shaders/lighting.vert", "shaders/lighting.frag");
-
-	VertexArrayObject objectVAO;
-	objectVAO.bind();
-
-	lightingShader.use();
-	lightingShader.setInt("material.diffuse", 0);
-
-	Texture objectDiffuseMap;
-	objectDiffuseMap.loadTextureFromDisk("resources/diffuseMap.png", "diffuseMap");
-	objectDiffuseMap.bind(0);
-
-	lightingShader.setInt("material.specular", 1);
-
-	Texture objectSpecularMap;
-	objectSpecularMap.loadTextureFromDisk("resources/specularMap.png", "specularMap");
-	objectSpecularMap.bind(1);
-
-	cubeVBO.bind();
 	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
-	glEnableVertexAttribArray(0);
+    GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", NULL, NULL);
+    if (window == NULL)
+    {
+        printf("ERROR: GLFW could not create a window.\n");
+        glfwTerminate();
+        std::exit(EXIT_FAILURE);
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, windowSizeCallback);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        printf("ERROR: Failed to initialise GLAD.\n");
+        glfwTerminate();
+        std::exit(EXIT_FAILURE);
+    }
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.f, 0.f, 0.f, 1.f);
 
-	cubeVBO.unbind();
-	objectDiffuseMap.unbind();
-	objectSpecularMap.unbind();
-	objectVAO.unbind();
+    Camera camera(window);
+    camera.setCameraSpeed(3.f);
 
-	Camera camera(window);
+    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
+    Grid grid;
 
-	//Numbers of the lights must match with numbers of the lights in fragment shader.
-	DirectionalLight directionalLight(lightingShader);
-	directionalLight.setDirection(glm::vec3(0.f, 0.f, 1.f));
+    //Set this to false or true based on model texturing.
+    //For backpack model this is true.
+    stbi_set_flip_vertically_on_load(true);
 
-	PointLight pointLightOne(lightingShader);
-	pointLightOne.setPosition(glm::vec3(3.f, 0.f, 0.f));
-	pointLightOne.setAmbient(glm::vec3(0.05f, 0.f, 0.f));
-	pointLightOne.setDiffuse(glm::vec3(0.7f, 0.f, 0.f));
-	pointLightOne.setSpecular(glm::vec3(1.f, 0.f, 0.f));
+    Shader modelShader("shaders/modelLoading.vert", "shaders/modelLoading.frag");
+    Model backpack("resources/models/backpack/backpack.obj");
 
-	PointLight pointLightTwo(lightingShader);
-	pointLightTwo.setPosition(glm::vec3(-3.f, 0.f, 0.f));
-	pointLightTwo.setAmbient(glm::vec3(0.f, 0.05f, 0.f));
-	pointLightTwo.setDiffuse(glm::vec3(0.f, 0.7f, 0.f));
-	pointLightTwo.setSpecular(glm::vec3(0.f, 1.f, 0.f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 300.f);
+    while (!glfwWindowShouldClose(window))
+    {
+        currentFrame = (float)glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-	SpotLight spotLight(lightingShader);
-	spotLight.setPosition(glm::vec3(0.f, 0.f, 3.f));
-	spotLight.setDirection(glm::vec3(0.f, 0.f, -1.f));
-	spotLight.setAmbient(glm::vec3(0.f, 0.f, 0.05f));
-	spotLight.setDiffuse(glm::vec3(0.f, 0.f, 0.7f));
-	spotLight.setSpecular(glm::vec3(0.f, 0.f, 1.f));
+        glfwPollEvents();
+        if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        {
+            glfwSetWindowShouldClose(window, true);
+        }
 
-	lightingShader.setFloat("material.shininess", 32.f);
-	glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeigth, 0.1f, 100.f);
-	while (!glfwWindowShouldClose(window))
-	{
-		currentFrame = (float)glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-		
-		glfwPollEvents();
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			glfwSetWindowShouldClose(window, true);
+        camera.update();
+        glm::mat4 view = camera.getViewMatrix();
 
-		camera.update();
+        if (glfwGetKey(window,GLFW_KEY_E) == GLFW_PRESS)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else if (glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 model = glm::mat4(1.f);
-		glm::mat4 view = camera.getViewMatrix();
+        //DRAW MODEL.
 
-		//DRAW CUBE
-		lightingShader.use();
-		objectVAO.bind();
-		objectDiffuseMap.bind(0);
-		objectSpecularMap.bind(1);
+        modelShader.use();
+        glm::mat4 model = glm::mat4(1.f);
 
-		model = glm::mat4(1.f);
+        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        modelShader.setMat4("model", model);
+        modelShader.setMat4("view", view);
+        modelShader.setMat4("projection", projection);
 
-		lightingShader.setMat4("model", model);
-		lightingShader.setMat4("view", view);
-		lightingShader.setMat4("projection", projection);
+        backpack.draw(modelShader);
 
-		glm::vec3 viewPosition = camera.getCameraPosition();
-		lightingShader.setVec3("viewPosition", viewPosition);
+        //Draw Grid.
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+        gridShader.use();
+        model = glm::mat4(1.f);
 
-		//DRAW GRIDS
-		axisShader.use();
-		axisVAO.bind();
+        gridShader.setMat4("model", model);
+        gridShader.setMat4("view", view);
+        gridShader.setMat4("projection", projection);
 
-		model = glm::mat4(1.f);
+        grid.draw(gridShader);
 
-		axisShader.setMat4("model", model);
-		axisShader.setMat4("view", view);
-		axisShader.setMat4("projection", projection);
+        glfwSwapBuffers(window);
+    }
 
-		axisShader.setVec3("color", 1.f, 0.f, 0.f);
-		glDrawArrays(GL_LINES, 0, 2);
-
-		axisShader.setVec3("color", 0.f, 1.f, 0.f);
-		glDrawArrays(GL_LINES, 2, 2);
-
-		axisShader.setVec3("color", 0.f, 0.f, 1.f);
-		glDrawArrays(GL_LINES, 4, 2);
-
-		glfwSwapBuffers(window);
-	}
-
-	glfwTerminate();
+    glfwTerminate();
 }

@@ -30,9 +30,6 @@
     <ClCompile Include="source\Shader.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="source\Texture.cpp">
-      <Filter>Kaynak Dosyalar</Filter>
-    </ClCompile>
     <ClCompile Include="source\Debug.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
@@ -55,6 +52,15 @@
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
     <ClCompile Include="source\SpotLight.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Model.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Mesh.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Grid.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,6 +104,15 @@
     <ClInclude Include="include\Vertex.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
+    <ClInclude Include="include\Grid.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Mesh.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Model.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\texture.jpg">
@@ -110,5 +125,13 @@
   <ItemGroup>
     <None Include="shaders\lighting.vert" />
     <None Include="shaders\lighting.frag" />
+    <None Include="shaders\modelLoading.vert" />
+    <None Include="shaders\modelLoading.frag" />
+    <None Include="shaders\lightSource.vert" />
+    <None Include="shaders\lightSource.frag" />
+    <None Include="shaders\grid.vert" />
+    <None Include="shaders\grid.frag" />
+    <None Include="shaders\axis.vert" />
+    <None Include="shaders\axis.frag" />
   </ItemGroup>
 </Project>

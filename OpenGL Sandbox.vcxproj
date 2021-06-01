@@ -123,7 +123,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -143,6 +143,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Grid.cpp" />
+    <ClCompile Include="source\Mesh.cpp" />
+    <ClCompile Include="source\Model.cpp" />
     <ClCompile Include="source\PointLight.cpp" />
     <ClCompile Include="source\DirectionalLight.cpp" />
     <ClCompile Include="source\Camera.cpp" />
@@ -153,7 +156,6 @@
     <ClCompile Include="source\glad.c" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\stb_image.cpp" />
-    <ClCompile Include="source\Texture.cpp" />
     <ClCompile Include="source\VertexArrayObject.cpp" />
     <ClCompile Include="source\VertexBufferObject.cpp" />
     <ClCompile Include="source\SpotLight.cpp" />
@@ -165,6 +167,9 @@
     <ClInclude Include="include\Debug.h" />
     <ClInclude Include="include\Callback.h" />
     <ClInclude Include="external\include\stb_image.h" />
+    <ClInclude Include="include\Grid.h" />
+    <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\Model.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\Texture.h" />
     <ClInclude Include="include\Vertex.h" />
@@ -178,8 +183,16 @@
     <Image Include="resources\wall.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\axis.frag" />
+    <None Include="shaders\axis.vert" />
+    <None Include="shaders\grid.frag" />
+    <None Include="shaders\grid.vert" />
     <None Include="shaders\lighting.frag" />
     <None Include="shaders\lighting.vert" />
+    <None Include="shaders\lightSource.frag" />
+    <None Include="shaders\lightSource.vert" />
+    <None Include="shaders\modelLoading.frag" />
+    <None Include="shaders\modelLoading.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

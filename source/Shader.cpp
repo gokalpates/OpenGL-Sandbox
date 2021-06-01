@@ -91,11 +91,6 @@ void Shader::disuse() const
 	glUseProgram(0u);
 }
 
-unsigned int Shader::getShaderId() const
-{
-	return m_shaderId;
-}
-
 void Shader::setBool(const char* name, bool value) const
 {
 	glUniform1i(glGetUniformLocation(m_shaderId, name), (int)value);
