@@ -133,5 +133,7 @@
     <None Include="shaders\grid.frag" />
     <None Include="shaders\axis.vert" />
     <None Include="shaders\axis.frag" />
+    <None Include="shaders\modelLoadingLighting.vert" />
+    <None Include="shaders\modelLoadingLighting.frag" />
   </ItemGroup>
 </Project>

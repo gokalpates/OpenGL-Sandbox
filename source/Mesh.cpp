@@ -20,18 +20,18 @@ void Mesh::draw(Shader& shader)
 		std::string index;
 		std::string name = textures[i].type;
 
-		if (name == "texture_diffuse")
+		if (name == "diffuse")
 		{
 			index = std::to_string(diffuseCount);
 			diffuseCount++;
 		}
-		else if (name == "texture_specular")
+		else if (name == "specular")
 		{
 			index = std::to_string(specularCount);
 			specularCount++;
 		}
 
-		glUniform1i(glGetUniformLocation(shader.m_shaderId, (name + index).c_str()), i);
+		glUniform1i(glGetUniformLocation(shader.m_shaderId, ("material." + name + index).c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 
