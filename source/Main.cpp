@@ -43,7 +43,7 @@ int main()
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
     Camera camera(window);
-    camera.setCameraSpeed(3.f);
+    camera.setCameraSpeed(15.f);
 
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Grid grid;
@@ -53,22 +53,9 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     Shader modelShader("shaders/modelLoading.vert", "shaders/modelLoading.frag");
-    Shader modelLightingShader("shaders/modelLoadingLighting.vert", "shaders/modelLoadingLighting.frag");
-    Shader lightSourceShader("shaders/lightSource.vert", "shaders/lightSource.frag");
-
     Model backpack("resources/models/backpack/backpack.obj");
-    Model sphere("resources/models/sphere/sphere.obj");
 
-    modelLightingShader.use();
-    PointLight pointLightOne(modelLightingShader);
-    pointLightOne.setPosition(glm::vec3(3.f, 0.f, 0.f));
-    pointLightOne.setAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
-    pointLightOne.setDiffuse(glm::vec3(0.7f, 0.7f, 0.7f));
-    pointLightOne.setSpecular(glm::vec3(1.f, 1.f, 1.f));
-
-    modelLightingShader.setFloat("material.shininess", 32.f);
-
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 300.f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
     {
         currentFrame = (float)glfwGetTime();
@@ -84,35 +71,35 @@ int main()
         camera.update();
         glm::mat4 view = camera.getViewMatrix();
 
-        modelLightingShader.use();
-        glm::vec3 cameraPosition = camera.getCameraPosition();
-        modelLightingShader.setVec3("viewPosition", cameraPosition);
-
-        if (glfwGetKey(window,GLFW_KEY_E) == GLFW_PRESS)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-        else if (glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //DRAW MODEL.
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            glDepthFunc(GL_GREATER);
+        }
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        {
+            glDepthFunc(GL_LESS);
+        }
 
-        modelLightingShader.use();
+        // DRAW OBJECTS
+        modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
 
-        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-        modelLightingShader.setMat4("model", model);
-        modelLightingShader.setMat4("view", view);
-        modelLightingShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+        modelShader.setMat4("projection", projection);
 
-        backpack.draw(modelLightingShader);
+        float multiplier = 10.f;
+        for (size_t i = 0; i < 10u; i++)
+        {
+            model = glm::mat4(1.f);
+            model = glm::translate(model, glm::vec3(0.f, 0.f, i * multiplier));
+            modelShader.setMat4("model", model);
 
-        //Draw Grid.
+            backpack.draw(modelShader);
+        }
 
+        // DRAW GRIDS
         gridShader.use();
         model = glm::mat4(1.f);
 
@@ -121,28 +108,6 @@ int main()
         gridShader.setMat4("projection", projection);
 
         grid.draw(gridShader);
-
-        //DRAW LIGHT SOURCE
-
-        lightSourceShader.use();
-        model = glm::mat4(1.f);
-
-        float x = std::cos(glfwGetTime());
-        float z = std::sin(glfwGetTime());
-
-        pointLightOne.setPosition(glm::vec3(x,0.f,z));
-
-        model = glm::translate(model, pointLightOne.getPosition());
-        model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-        lightSourceShader.setMat4("model", model);
-        lightSourceShader.setMat4("view", view);
-        lightSourceShader.setMat4("projection", projection);
-
-        glm::vec3 pointLightColor = pointLightOne.getSpecular();
-        lightSourceShader.setVec3("light.color", pointLightColor);
-
-        sphere.draw(lightSourceShader);
-
         glfwSwapBuffers(window);
     }
 
