@@ -125,8 +125,8 @@
   <ItemGroup>
     <None Include="shaders\lighting.vert" />
     <None Include="shaders\lighting.frag" />
-    <None Include="shaders\modelLoading.vert" />
-    <None Include="shaders\modelLoading.frag" />
+    <None Include="shaders\linearDepth.vert" />
+    <None Include="shaders\linearDepth.frag" />
     <None Include="shaders\lightSource.vert" />
     <None Include="shaders\lightSource.frag" />
     <None Include="shaders\grid.vert" />
@@ -135,5 +135,9 @@
     <None Include="shaders\axis.frag" />
     <None Include="shaders\modelLoadingLighting.vert" />
     <None Include="shaders\modelLoadingLighting.frag" />
+    <None Include="shaders\model.vert" />
+    <None Include="shaders\model.frag" />
+    <None Include="shaders\objectOutlining.vert" />
+    <None Include="shaders\objectOutlining.frag" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -40,6 +42,7 @@ int main()
     }
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
     Camera camera(window);
@@ -52,7 +55,8 @@ int main()
     //For backpack model this is true.
     stbi_set_flip_vertically_on_load(true);
 
-    Shader modelShader("shaders/modelLoading.vert", "shaders/modelLoading.frag");
+    Shader modelShader("shaders/model.vert", "shaders/model.frag");
+    Shader outliningShader("shaders/objectOutlining.vert", "shaders/objectOutlining.frag");
     Model backpack("resources/models/backpack/backpack.obj");
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
@@ -71,33 +75,41 @@ int main()
         camera.update();
         glm::mat4 view = camera.getViewMatrix();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        {
-            glDepthFunc(GL_GREATER);
-        }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-        {
-            glDepthFunc(GL_LESS);
-        }
+        // DRAW OBJECTS WITH OBJECT OUTLINING
 
-        // DRAW OBJECTS
+        // WRITE 1s TO STENCIL BUFFER
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+
         modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
 
+        modelShader.setMat4("model", model);
         modelShader.setMat4("view", view);
         modelShader.setMat4("projection", projection);
 
-        float multiplier = 10.f;
-        for (size_t i = 0; i < 10u; i++)
-        {
-            model = glm::mat4(1.f);
-            model = glm::translate(model, glm::vec3(0.f, 0.f, i * multiplier));
-            modelShader.setMat4("model", model);
+        backpack.draw(modelShader);
 
-            backpack.draw(modelShader);
-        }
+        // DRAW ONLY PARTS OF WHICH NOT EQUAL TO 1 
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+        
+        outliningShader.use();
+
+        outliningShader.setMat4("model", model);
+        outliningShader.setMat4("view", view);
+        outliningShader.setMat4("projection", projection);
+
+        backpack.draw(outliningShader);
+
+        // REVERT SETTINGS TO DEFAULT
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+        glEnable(GL_DEPTH_TEST);
 
         // DRAW GRIDS
         gridShader.use();
