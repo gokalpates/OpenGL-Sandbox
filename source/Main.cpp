@@ -1,6 +1,6 @@
 #include <iostream>
-#include <chrono>
-#include <thread>
+#include <ctime>
+#include <cstdlib>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -16,6 +16,8 @@ float deltaTime = 0.f, currentFrame, lastFrame = 0.f;
 
 int main()
 {
+    srand(time(0));
+
     int screenWidth = 2560;
     int screenHeight = 1440;
 
@@ -42,7 +44,6 @@ int main()
     }
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
     Camera camera(window);
@@ -56,8 +57,65 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
-    Shader outliningShader("shaders/objectOutlining.vert", "shaders/objectOutlining.frag");
-    Model backpack("resources/models/backpack/backpack.obj");
+    Model terrain("resources/models/basicLand/basicLand.obj");
+
+    Shader vegetableShader("shaders/vegetable.vert", "shaders/vegetable.frag");
+
+    std::vector<Vertex> Quad = {
+        Vertex(0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f), //Bottom left
+        Vertex(1.f,0.f,0.f,0.f,0.f,0.f,1.f,0.f), //Bottom right
+        Vertex(0.f,1.f,0.f,0.f,0.f,0.f,0.f,1.f), //Top left
+
+        Vertex(1.f,0.f,0.f,0.f,0.f,0.f,1.f,0.f), //Top left
+        Vertex(0.f,1.f,0.f,0.f,0.f,0.f,0.f,1.f), //Bottom right
+        Vertex(1.f,1.f,0.f,0.f,0.f,0.f,1.f,1.f) //Top right
+    };
+
+    GLuint vegetableVAO;
+    glGenVertexArrays(1, &vegetableVAO);
+    glBindVertexArray(vegetableVAO);
+
+    GLuint vegetableVBO;
+    glGenBuffers(1, &vegetableVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, vegetableVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * Quad.size(), Quad.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex,texCoordinate));
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    GLuint vegetableTexture;
+    vegetableTexture = loadTextureFromDisk("resources/grass.png");
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //BAKING SCENE
+#define VEGETABLE_COUNT 30
+#define VEGETABLE_DENSITY 5
+
+    std::vector<glm::mat4> vegetableModelMatrices;
+    for (size_t i = 0; i < VEGETABLE_COUNT; i++)
+    {
+        for (size_t j = 0; j < VEGETABLE_COUNT; j++)
+        {
+            glm::mat4 model(1.f);
+            model = glm::translate(model, glm::vec3(j / VEGETABLE_DENSITY, 0, i / VEGETABLE_DENSITY));
+            model = glm::rotate(model, glm::radians((float)rand()), glm::vec3(0.f, 1.f, 0.f));
+            float scaleX = (rand() % 100) / 16;
+            float scaleY = (rand() % 100) / 16;
+            float scaleZ = (rand() % 100) / 16;
+            model = glm::scale(model, glm::vec3(scaleX, scaleY, scaleZ));
+            vegetableModelMatrices.push_back(model);
+        }
+    }
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
@@ -75,15 +133,9 @@ int main()
         camera.update();
         glm::mat4 view = camera.getViewMatrix();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // DRAW OBJECTS WITH OBJECT OUTLINING
-
-        // WRITE 1s TO STENCIL BUFFER
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilMask(0xFF);
-
+        // DRAW TERRAIN
         modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
 
@@ -91,25 +143,30 @@ int main()
         modelShader.setMat4("view", view);
         modelShader.setMat4("projection", projection);
 
-        backpack.draw(modelShader);
-
-        // DRAW ONLY PARTS OF WHICH NOT EQUAL TO 1 
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilMask(0x00);
-        glDisable(GL_DEPTH_TEST);
+        terrain.draw(modelShader);
         
-        outliningShader.use();
+        // DRAW VEGETABLE
+        vegetableShader.use();
+        model = glm::mat4(1.f);
 
-        outliningShader.setMat4("model", model);
-        outliningShader.setMat4("view", view);
-        outliningShader.setMat4("projection", projection);
+        vegetableShader.setMat4("model", model);
+        vegetableShader.setMat4("view", view);
+        vegetableShader.setMat4("projection", projection);
 
-        backpack.draw(outliningShader);
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, vegetableTexture);
+        vegetableShader.setInt("texture_diffuse", 0);
 
-        // REVERT SETTINGS TO DEFAULT
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilMask(0xFF);
-        glEnable(GL_DEPTH_TEST);
+        glBindVertexArray(vegetableVAO);
+        for (size_t i = 0; i < vegetableModelMatrices.size(); i++)
+        {
+            vegetableShader.setMat4("model", vegetableModelMatrices.at(i));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+        glBindVertexArray(0);
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // DRAW GRIDS
         gridShader.use();

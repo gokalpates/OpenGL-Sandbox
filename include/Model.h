@@ -10,8 +10,6 @@
 #include "Mesh.h"
 #include "Shader.h"
 
-unsigned int loadTextureFromDisk(const char* path, std::string directory);
-
 class Model
 {
 public:
@@ -24,6 +22,7 @@ private:
 	std::vector<Texture> loadedTextures;
 
 	void loadModel(std::string path);
+	unsigned int loadTextureFromDisk(const char* path, std::string directory);
 
 	void processNode(const aiScene* scene, aiNode* node);
 	Mesh processMesh(const aiScene* scene, aiMesh* mesh);

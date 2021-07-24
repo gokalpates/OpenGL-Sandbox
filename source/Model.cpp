@@ -139,7 +139,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 	return textures;
 }
 
-unsigned int loadTextureFromDisk(const char* path, std::string directory)
+unsigned int Model::loadTextureFromDisk(const char* path, std::string directory)
 {
 	std::string fileName = std::string(path);
 	fileName = directory + '/' + fileName;

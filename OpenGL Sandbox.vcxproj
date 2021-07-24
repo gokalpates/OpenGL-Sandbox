@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\Texture.cpp" />
     <ClCompile Include="source\Grid.cpp" />
     <ClCompile Include="source\Mesh.cpp" />
     <ClCompile Include="source\Model.cpp" />
@@ -199,6 +200,8 @@
     <None Include="shaders\modelLoadingLighting.vert" />
     <None Include="shaders\objectOutlining.frag" />
     <None Include="shaders\objectOutlining.vert" />
+    <None Include="shaders\vegetable.frag" />
+    <None Include="shaders\vegetable.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

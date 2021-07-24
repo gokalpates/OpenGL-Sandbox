@@ -63,6 +63,9 @@
     <ClCompile Include="source\Grid.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="include\Texture.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Callback.h">
@@ -139,5 +142,7 @@
     <None Include="shaders\model.frag" />
     <None Include="shaders\objectOutlining.vert" />
     <None Include="shaders\objectOutlining.frag" />
+    <None Include="shaders\vegetable.vert" />
+    <None Include="shaders\vegetable.frag" />
   </ItemGroup>
 </Project>
