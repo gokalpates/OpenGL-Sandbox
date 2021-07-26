@@ -144,5 +144,7 @@
     <None Include="shaders\objectOutlining.frag" />
     <None Include="shaders\vegetable.vert" />
     <None Include="shaders\vegetable.frag" />
+    <None Include="shaders\blending.vert" />
+    <None Include="shaders\blending.frag" />
   </ItemGroup>
 </Project>

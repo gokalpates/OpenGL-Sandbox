@@ -1,6 +1,4 @@
 #include <iostream>
-#include <ctime>
-#include <cstdlib>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -11,13 +9,12 @@
 #include "Camera.h"
 #include "Grid.h"
 #include "PointLight.h"
+#include "Debug.h"
 
 float deltaTime = 0.f, currentFrame, lastFrame = 0.f;
 
 int main()
 {
-    srand(time(0));
-
     int screenWidth = 2560;
     int screenHeight = 1440;
 
@@ -47,20 +44,15 @@ int main()
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
     Camera camera(window);
-    camera.setCameraSpeed(15.f);
+    camera.setCameraSpeed(10.f);
 
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Grid grid;
 
-    //Set this to false or true based on model texturing.
-    //For backpack model this is true.
-    stbi_set_flip_vertically_on_load(true);
-
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
     Model terrain("resources/models/basicLand/basicLand.obj");
 
-    Shader vegetableShader("shaders/vegetable.vert", "shaders/vegetable.frag");
-
+    Shader blendingShader("shaders/blending.vert", "shaders/blending.frag");
     std::vector<Vertex> Quad = {
         Vertex(0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f), //Bottom left
         Vertex(1.f,0.f,0.f,0.f,0.f,0.f,1.f,0.f), //Bottom right
@@ -71,13 +63,13 @@ int main()
         Vertex(1.f,1.f,0.f,0.f,0.f,0.f,1.f,1.f) //Top right
     };
 
-    GLuint vegetableVAO;
-    glGenVertexArrays(1, &vegetableVAO);
-    glBindVertexArray(vegetableVAO);
+    GLuint windowVAO;
+    glGenVertexArrays(1, &windowVAO);
+    glBindVertexArray(windowVAO);
 
-    GLuint vegetableVBO;
-    glGenBuffers(1, &vegetableVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, vegetableVBO);
+    GLuint windowVBO;
+    glGenBuffers(1, &windowVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * Quad.size(), Quad.data(), GL_STATIC_DRAW);
 
@@ -88,34 +80,13 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex,texCoordinate));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoordinate));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    GLuint vegetableTexture;
-    vegetableTexture = loadTextureFromDisk("resources/grass.png");
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    //BAKING SCENE
-#define VEGETABLE_COUNT 30
-#define VEGETABLE_DENSITY 5
-
-    std::vector<glm::mat4> vegetableModelMatrices;
-    for (size_t i = 0; i < VEGETABLE_COUNT; i++)
-    {
-        for (size_t j = 0; j < VEGETABLE_COUNT; j++)
-        {
-            glm::mat4 model(1.f);
-            model = glm::translate(model, glm::vec3(j / VEGETABLE_DENSITY, 0, i / VEGETABLE_DENSITY));
-            model = glm::rotate(model, glm::radians((float)rand()), glm::vec3(0.f, 1.f, 0.f));
-            float scaleX = (rand() % 100) / 16;
-            float scaleY = (rand() % 100) / 16;
-            float scaleZ = (rand() % 100) / 16;
-            model = glm::scale(model, glm::vec3(scaleX, scaleY, scaleZ));
-            vegetableModelMatrices.push_back(model);
-        }
-    }
+    GLuint windowTexture;
+    windowTexture = loadTextureFromDisk("resources/redTransparentWindow.png");
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
@@ -144,29 +115,6 @@ int main()
         modelShader.setMat4("projection", projection);
 
         terrain.draw(modelShader);
-        
-        // DRAW VEGETABLE
-        vegetableShader.use();
-        model = glm::mat4(1.f);
-
-        vegetableShader.setMat4("model", model);
-        vegetableShader.setMat4("view", view);
-        vegetableShader.setMat4("projection", projection);
-
-        glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, vegetableTexture);
-        vegetableShader.setInt("texture_diffuse", 0);
-
-        glBindVertexArray(vegetableVAO);
-        for (size_t i = 0; i < vegetableModelMatrices.size(); i++)
-        {
-            vegetableShader.setMat4("model", vegetableModelMatrices.at(i));
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        glBindVertexArray(0);
-        glActiveTexture(GL_TEXTURE0 + 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         // DRAW GRIDS
         gridShader.use();
@@ -177,6 +125,30 @@ int main()
         gridShader.setMat4("projection", projection);
 
         grid.draw(gridShader);
+
+        // DRAW WINDOW
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        blendingShader.use();
+
+        model = glm::translate(model, glm::vec3(0.f, 1.f, 10.f));
+        model = glm::scale(model, glm::vec3(2.f, 2.f, 2.f));
+
+        blendingShader.setMat4("model", model);
+        blendingShader.setMat4("view", view);
+        blendingShader.setMat4("projection", projection);
+
+        glActiveTexture(GL_TEXTURE0 + 0);
+        glBindTexture(GL_TEXTURE_2D, windowTexture);
+        blendingShader.setInt("texture_diffuse", 0);
+
+        glBindVertexArray(windowVAO);
+        glDrawArrays(GL_TRIANGLES, 0, Quad.size());
+
+        glDisable(GL_BLEND);
+        
+        //------------------SWAP BUFFERS------------------
         glfwSwapBuffers(window);
     }
 
