@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -88,6 +89,13 @@ int main()
     GLuint windowTexture;
     windowTexture = loadTextureFromDisk("resources/redTransparentWindow.png");
 
+    std::vector<glm::vec3> windowPositions;
+    windowPositions.push_back(glm::vec3(0.f, 1.f, 1.f));
+    windowPositions.push_back(glm::vec3(1.f, 2.f, 2.f));
+    windowPositions.push_back(glm::vec3(2.f, 3.f, 3.f));
+    windowPositions.push_back(glm::vec3(3.f, 4.f, 4.f));
+    std::map<float, glm::vec3> windowOrderedPositions;
+
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
     {
@@ -126,16 +134,21 @@ int main()
 
         grid.draw(gridShader);
 
-        // DRAW WINDOW
+        // DRAW WINDOWS
+       
+        // Order windows.
+        windowOrderedPositions.clear();
+        for (size_t i = 0; i < windowPositions.size(); i++)
+        {
+            float distance = glm::length(camera.getCameraPosition() - windowPositions.at(i));
+            windowOrderedPositions[distance] = windowPositions.at(i);
+        }
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         blendingShader.use();
 
-        model = glm::translate(model, glm::vec3(0.f, 1.f, 10.f));
-        model = glm::scale(model, glm::vec3(2.f, 2.f, 2.f));
-
-        blendingShader.setMat4("model", model);
         blendingShader.setMat4("view", view);
         blendingShader.setMat4("projection", projection);
 
@@ -144,8 +157,14 @@ int main()
         blendingShader.setInt("texture_diffuse", 0);
 
         glBindVertexArray(windowVAO);
-        glDrawArrays(GL_TRIANGLES, 0, Quad.size());
-
+        for (std::map<float,glm::vec3>::reverse_iterator it = windowOrderedPositions.rbegin(); it != windowOrderedPositions.rend(); it++)
+        {
+            model = glm::mat4(1.f);
+            model = glm::translate(model, it->second);
+            model = glm::scale(model, glm::vec3(2.f, 2.f, 2.f));
+            blendingShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, Quad.size());
+        }
         glDisable(GL_BLEND);
         
         //------------------SWAP BUFFERS------------------
