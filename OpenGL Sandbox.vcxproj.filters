@@ -63,7 +63,7 @@
     <ClCompile Include="source\Grid.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="include\Texture.cpp">
+    <ClCompile Include="source\Texture.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>
