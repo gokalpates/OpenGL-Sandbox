@@ -17,6 +17,7 @@ public:
 
 	void setCameraSpeed(float value = 0.002f);
 	void setSensivity(float value = 0.1f);
+	void setFirstTouch(bool value = true);
 
 private:
 	int windowWidth, windowHeight;
@@ -26,6 +27,7 @@ private:
 	double mouseLastXPosition, mouseLastYPosition;
 	float sensivity;
 	float pitch, yaw;
+	bool firstTouch;
 	GLFWwindow* cameraWindow;
 
 	void processKeyboard(GLFWwindow* window);

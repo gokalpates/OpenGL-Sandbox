@@ -17,6 +17,7 @@
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
+int fpsToShow = 0;
 size_t counter = 0;
 
 int main()
@@ -52,9 +53,10 @@ int main()
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+    bool editorLayer = false;
+    glm::mat4 editorMat4 = glm::mat4(1.f);
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.f, 0.f, 0.f, 1.f);
 
     Camera camera(window);
     camera.setCameraSpeed(10.f);
@@ -65,7 +67,13 @@ int main()
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
     Model sandTerrain("resources/models/Sand Terrain/sandTerrain.obj");
     Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
+    
+    float inputLocation[3] = { 0,0,0 };
+    float inputRotation[3] = { 0,0,0 };
+    float inputScale[3] = { 1,1,1 };
+    float backgroundColor[4] = { 0,0,0,1 };
 
+    glm::mat4 view = camera.getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
     {
@@ -77,30 +85,60 @@ int main()
         
         if (diffTime >= 1.0)
         {
-            std::string FPS = "FPS: " + std::to_string(counter);
-            glfwSetWindowTitle(window, FPS.c_str());
+            fpsToShow = counter;
             counter = 0;
             lastTime = currentTime;
         }
 
         glfwPollEvents();
-        if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        {
-            glfwSetWindowShouldClose(window, true);
-        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        camera.update();
-        glm::mat4 view = camera.getViewMatrix();
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            camera.setFirstTouch(true);
+            editorMat4 = view;
+            editorLayer = true;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            editorLayer = false;
+        }
 
+        if (editorLayer)
+        {
+            view = editorMat4;
+            ImGui::Begin("OpenGL Renderer");
+            ImGui::Text("Mode: Editor Mode.");
+            ImGui::Text("FPS: %d", fpsToShow);
+            ImGui::End();
+
+            ImGui::Begin("Transform");
+            ImGui::InputFloat3("Location", inputLocation);
+            ImGui::InputFloat3("Rotation", inputRotation);
+            ImGui::InputFloat3("Scale", inputScale);
+            ImGui::End();
+
+            ImGui::Begin("Sky");
+            ImGui::ColorEdit4("Background Color", backgroundColor);
+            ImGui::End();
+        }
+        else
+        {
+            camera.update();
+            view = camera.getViewMatrix();
+            ImGui::Begin("OpenGL Renderer");
+            ImGui::Text("Mode: Render Mode.");
+            ImGui::Text("FPS: %d", fpsToShow);
+            ImGui::End();
+        }
+
+        glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ImGui::Begin("Hello This is my first window GUI in OpenGL");
-        ImGui::Text("Hello World!");
-        ImGui::End();
 
         // DRAW TERRAIN
         modelShader.use();;
@@ -112,6 +150,16 @@ int main()
         // DRAW WOODEN BOX
         modelShader.use();
         model = glm::mat4(1.f);
+
+        glm::vec3 location(inputLocation[0], inputLocation[1], inputLocation[2]);
+        glm::vec3 scale(inputScale[0], inputScale[1], inputScale[2]);
+
+        model = glm::translate(model, location);
+        model = glm::rotate(model, glm::radians(inputRotation[0]), glm::vec3(1.f, 0.f, 0.f));
+        model = glm::rotate(model, glm::radians(inputRotation[1]), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::rotate(model, glm::radians(inputRotation[2]), glm::vec3(0.f, 0.f, 1.f));
+        model = glm::scale(model, scale);
+
         modelShader.setAllMat4(model, view, projection);
 
         woodenBox.draw(modelShader);

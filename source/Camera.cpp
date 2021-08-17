@@ -18,6 +18,7 @@ Camera::Camera(GLFWwindow* window) :
 	sensivity(0.1f),
 	pitch(0.f),
 	yaw(0.f),
+	firstTouch(true),
 	cameraWindow(window)
 {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -57,6 +58,11 @@ void Camera::setSensivity(float value)
 	sensivity = value;
 }
 
+void Camera::setFirstTouch(bool value)
+{
+	firstTouch = value;
+}
+
 void Camera::processKeyboard(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -74,6 +80,12 @@ void Camera::processMouse(GLFWwindow* window)
 	glfwGetCursorPos(window, &mouseXPosition, &mouseYPosition);
 	if ((mouseXPosition != mouseLastXPosition) || (mouseYPosition != mouseLastYPosition))
 	{
+		if (firstTouch)
+		{
+			mouseLastXPosition = mouseXPosition;
+			mouseLastYPosition = mouseYPosition;
+			firstTouch = false;
+		}
 		double xOffset = mouseXPosition - mouseLastXPosition;
 		double yOffset = mouseLastYPosition - mouseYPosition; // Reversed because y coordinates goes top to bottom.
 		mouseLastXPosition = mouseXPosition;
