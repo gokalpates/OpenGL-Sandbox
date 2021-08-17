@@ -4,6 +4,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include "Callback.h"
 #include "Shader.h"
 #include "Model.h"
@@ -42,6 +46,13 @@ int main()
         std::exit(EXIT_FAILURE);
     }
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
@@ -78,10 +89,18 @@ int main()
             glfwSetWindowShouldClose(window, true);
         }
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         camera.update();
         glm::mat4 view = camera.getViewMatrix();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ImGui::Begin("Hello This is my first window GUI in OpenGL");
+        ImGui::Text("Hello World!");
+        ImGui::End();
 
         // DRAW TERRAIN
         modelShader.use();;
@@ -104,10 +123,16 @@ int main()
 
         grid.draw(gridShader);
   
-        //------------------SWAP BUFFERS------------------
+        //------------------SWAP BUFFERS AND RENDER GUI------------------
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         counter++;
     }
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
+    glfwDestroyWindow(window);
     glfwTerminate();
 }

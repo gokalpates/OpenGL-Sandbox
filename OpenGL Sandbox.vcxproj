@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)external\include;$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)external\include\imgui;$(ProjectDir)external\include;$(ProjectDir)include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -143,6 +143,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\external\glad.c" />
+    <ClCompile Include="source\external\imgui.cpp" />
+    <ClCompile Include="source\external\imgui_demo.cpp" />
+    <ClCompile Include="source\external\imgui_draw.cpp" />
+    <ClCompile Include="source\external\imgui_impl_glfw.cpp" />
+    <ClCompile Include="source\external\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="source\external\imgui_tables.cpp" />
+    <ClCompile Include="source\external\imgui_widgets.cpp" />
     <ClCompile Include="source\Texture.cpp" />
     <ClCompile Include="source\Grid.cpp" />
     <ClCompile Include="source\Mesh.cpp" />
