@@ -27,6 +27,7 @@ public:
 	void setVec3(const char* name, glm::vec3& vector) const;
 	void setVec3(const char* name, float& x, float& y, float& z) const;
 	void setVec3(const char* name, float x, float y, float z) const;
+	void setAllMat4(glm::mat4& model, glm::mat4& view, glm::mat4& projection) const;
 
 	unsigned int m_shaderId;
 };

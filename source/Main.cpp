@@ -52,7 +52,8 @@ int main()
     Grid grid;
 
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
-    Model cathedral("resources/models/cathedral/combined02.obj");
+    Model sandTerrain("resources/models/Sand Terrain/sandTerrain.obj");
+    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
 
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
@@ -82,37 +83,24 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //If 'E' key is pressed then enable back face culling.
-        if (glfwGetKey(window,GLFW_KEY_E) == GLFW_PRESS)
-        {
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-        }
-        //If 'R' key is pressed then disable back face culling.
-        if (glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS)
-        {
-            glDisable(GL_CULL_FACE);
-        }
-
-        // DRAW CATHEDRAL
-        modelShader.use();
+        // DRAW TERRAIN
+        modelShader.use();;
         glm::mat4 model = glm::mat4(1.f);
+        modelShader.setAllMat4(model, view, projection);
 
-        model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+        sandTerrain.draw(modelShader);
 
-        modelShader.setMat4("model", model);
-        modelShader.setMat4("view", view);
-        modelShader.setMat4("projection", projection);
+        // DRAW WOODEN BOX
+        modelShader.use();
+        model = glm::mat4(1.f);
+        modelShader.setAllMat4(model, view, projection);
 
-        cathedral.draw(modelShader);
+        woodenBox.draw(modelShader);
 
         // DRAW GRIDS
         gridShader.use();
         model = glm::mat4(1.f);
-
-        gridShader.setMat4("model", model);
-        gridShader.setMat4("view", view);
-        gridShader.setMat4("projection", projection);
+        gridShader.setAllMat4(model, view, projection);
 
         grid.draw(gridShader);
   

@@ -125,3 +125,10 @@ void Shader::setVec3(const char* name, float x, float y, float z) const
 {
 	glUniform3f(glGetUniformLocation(m_shaderId, name), x, y, z);
 }
+
+void Shader::setAllMat4(glm::mat4& model, glm::mat4& view, glm::mat4& projection) const
+{
+	setMat4("model", model);
+	setMat4("view", view);
+	setMat4("projection", projection);
+}
