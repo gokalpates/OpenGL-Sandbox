@@ -196,6 +196,8 @@
     <None Include="shaders\axis.vert" />
     <None Include="shaders\blending.frag" />
     <None Include="shaders\blending.vert" />
+    <None Include="shaders\fbo.frag" />
+    <None Include="shaders\fbo.vert" />
     <None Include="shaders\grid.frag" />
     <None Include="shaders\grid.vert" />
     <None Include="shaders\lighting.frag" />

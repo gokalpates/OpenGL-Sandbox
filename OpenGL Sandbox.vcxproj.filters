@@ -170,5 +170,7 @@
     <None Include="shaders\vegetable.frag" />
     <None Include="shaders\blending.vert" />
     <None Include="shaders\blending.frag" />
+    <None Include="shaders\fbo.vert" />
+    <None Include="shaders\fbo.frag" />
   </ItemGroup>
 </Project>
