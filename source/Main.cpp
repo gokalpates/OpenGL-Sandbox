@@ -149,7 +149,6 @@ int main()
         modelShader.setAllMat4(model, view, projection);
         woodenBox.draw(modelShader);
 
-
         FBO.unbind();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
