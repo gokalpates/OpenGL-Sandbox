@@ -7,7 +7,7 @@ extern float deltaTime;
 Camera::Camera(GLFWwindow* window) :
 	windowWidth(0),
 	windowHeight(0),
-	cameraPosition(0.f, 0.f, 3.f),
+	cameraPosition(0.f, 0.f, 0.f),
 	cameraFront(0.f, 0.f, -1.f),
 	cameraUp(0.f, 1.f, 0.f),
 	cameraSpeed(2.5f),
@@ -46,6 +46,11 @@ void Camera::update()
 {
 	processMouse(cameraWindow);
 	processKeyboard(cameraWindow);
+}
+
+void Camera::setCameraPosition(glm::vec3 position)
+{
+	cameraPosition = position;
 }
 
 void Camera::setCameraSpeed(float value)

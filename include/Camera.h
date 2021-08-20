@@ -15,6 +15,7 @@ public:
 	glm::vec3 getCameraFront() const;
 	void update();
 
+	void setCameraPosition(glm::vec3 position);
 	void setCameraSpeed(float value = 0.002f);
 	void setSensivity(float value = 0.1f);
 	void setFirstTouch(bool value = true);
