@@ -213,6 +213,8 @@
     <None Include="shaders\modelLoadingLighting.vert" />
     <None Include="shaders\objectOutlining.frag" />
     <None Include="shaders\objectOutlining.vert" />
+    <None Include="shaders\skybox.frag" />
+    <None Include="shaders\skybox.vert" />
     <None Include="shaders\vegetable.frag" />
     <None Include="shaders\vegetable.vert" />
   </ItemGroup>
