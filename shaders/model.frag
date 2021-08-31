@@ -11,6 +11,6 @@ struct Material {
 uniform Material material;
 
 void main()
-{
+{																		
 	fragColor = vec4(texture(material.diffuse0, vertexTextureCoordinate).rgb,1.0);
 }

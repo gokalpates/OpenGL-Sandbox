@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <chrono>
+#include <thread>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -65,11 +67,12 @@ int main()
 
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
+    Shader cubemapShader("shaders/skybox.vert", "shaders/skybox.frag");
+
+    Model terrain("resources/models/Sand Terrain/sandTerrain.obj");
+    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
 
     Grid grid;
-
-    Model sandTerrain("resources/models/Sand Terrain/sandTerrain.obj");
-    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
 
     //SKYBOX.
     std::vector<std::string> skyboxLocations = {
@@ -171,16 +174,14 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    Shader cubemapShader("shaders/skybox.vert", "shaders/skybox.frag");
-
     glm::mat4 view = camera.getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
     while (!glfwWindowShouldClose(window))
     {
-        currentFrame = glfwGetTime();
-        currentTime = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        diffTime = currentTime - lastTime;
+        currentFrame = glfwGetTime(); //Týme one 
+        currentTime = glfwGetTime(); //time two
+        deltaTime = currentFrame - lastFrame; //difference between two times
+        diffTime = currentTime - lastTime; //difference between two times
         lastFrame = currentFrame;
         
         if (diffTime >= 1.0)
@@ -193,6 +194,15 @@ int main()
         glfwPollEvents();
         if (glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window,GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
+
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -207,8 +217,33 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //DRAW TERRAIN.
+        modelShader.use();
+
+        glm::mat4 model = glm::mat4(1.f);
+        modelShader.setAllMat4(model, view, projection);
+
+        terrain.draw(modelShader);
+
+        //DRAW BOX.
+        modelShader.use();
+
+        model = glm::mat4(1.f);
+        model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
+        modelShader.setAllMat4(model, view, projection);
+
+        woodenBox.draw(modelShader);
+
+        //DRAW AXIS.
+        gridShader.use();
+
+        model = glm::mat4(1.f);
+        gridShader.setAllMat4(model, view, projection);
+
+        grid.draw(gridShader);
+
         //DRAW SKYBOX.
-        glDepthMask(GL_FALSE);
+        glDepthFunc(GL_LEQUAL);
         cubemapShader.use();
 
         glm::mat4 cubemapView = glm::mat4(glm::mat3(view));
@@ -221,15 +256,7 @@ int main()
         cubemapShader.setInt("skybox", 0);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthMask(GL_TRUE);
-
-        //DRAW BOX.
-        modelShader.use();
-
-        glm::mat4 model = glm::mat4(1.f);
-        modelShader.setAllMat4(model, view, projection);
-
-        woodenBox.draw(modelShader);
+        glDepthFunc(GL_LESS);
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();
