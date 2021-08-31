@@ -68,8 +68,11 @@ int main()
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
     Shader cubemapShader("shaders/skybox.vert", "shaders/skybox.frag");
+    Shader reflectionShader("shaders/reflection.vert", "shaders/reflection.frag");
+    Shader refractionShader("shaders/refraction.vert", "shaders/refraction.frag");
+    
+    int reflectOrRefract = 0; // 0 is reflect. 1 is refract.
 
-    Model terrain("resources/models/Sand Terrain/sandTerrain.obj");
     Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
 
     Grid grid;
@@ -194,15 +197,10 @@ int main()
         glfwPollEvents();
         if (glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window,GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
-
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
+        if (glfwGetKey(window,GLFW_KEY_E) == GLFW_PRESS)
+            reflectOrRefract = 0;
+        if (glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS)
+            reflectOrRefract = 1;
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -217,30 +215,36 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //DRAW TERRAIN.
-        modelShader.use();
-
-        glm::mat4 model = glm::mat4(1.f);
-        modelShader.setAllMat4(model, view, projection);
-
-        terrain.draw(modelShader);
-
         //DRAW BOX.
-        modelShader.use();
+        glm::mat4 model = glm::mat4(1.f);
+        if (reflectOrRefract == 0)
+        {
+            reflectionShader.use();
 
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
-        modelShader.setAllMat4(model, view, projection);
+            model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
+            reflectionShader.setAllMat4(model, view, projection);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+            reflectionShader.setInt("skybox", 0);
+            glm::vec3 cameraPos = camera.getCameraPosition();
+            reflectionShader.setVec3("viewPosition", cameraPos);
 
-        woodenBox.draw(modelShader);
+            woodenBox.draw(reflectionShader);
+        }
+        else
+        {
+            refractionShader.use();
 
-        //DRAW AXIS.
-        gridShader.use();
+            model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
+            refractionShader.setAllMat4(model, view, projection);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+            refractionShader.setInt("skybox", 0);
+            glm::vec3 cameraPos = camera.getCameraPosition();
+            refractionShader.setVec3("viewPosition", cameraPos);
 
-        model = glm::mat4(1.f);
-        gridShader.setAllMat4(model, view, projection);
-
-        grid.draw(gridShader);
+            woodenBox.draw(refractionShader);
+        }
 
         //DRAW SKYBOX.
         glDepthFunc(GL_LEQUAL);

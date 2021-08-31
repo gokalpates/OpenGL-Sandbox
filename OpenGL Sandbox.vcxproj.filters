@@ -177,5 +177,9 @@
     <None Include="shaders\fbo.frag" />
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\skybox.frag" />
+    <None Include="shaders\reflection.vert" />
+    <None Include="shaders\reflection.frag" />
+    <None Include="shaders\refraction.vert" />
+    <None Include="shaders\refraction.frag" />
   </ItemGroup>
 </Project>
