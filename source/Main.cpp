@@ -19,6 +19,7 @@
 #include "Camera.h"
 #include "Grid.h"
 #include "Debug.h"
+#include "Skybox.h"
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
@@ -64,20 +65,9 @@ int main()
 
     Camera camera(window);
     camera.setCameraSpeed(15.f);
+    glm::mat4 view = camera.getViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
 
-    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
-    Shader modelShader("shaders/model.vert", "shaders/model.frag");
-    Shader cubemapShader("shaders/skybox.vert", "shaders/skybox.frag");
-    Shader reflectionShader("shaders/reflection.vert", "shaders/reflection.frag");
-    Shader refractionShader("shaders/refraction.vert", "shaders/refraction.frag");
-    
-    int reflectOrRefract = 0; // 0 is reflect. 1 is refract.
-
-    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
-
-    Grid grid;
-
-    //SKYBOX.
     std::vector<std::string> skyboxLocations = {
         "resources/skybox/right.jpg",
         "resources/skybox/left.jpg",
@@ -86,105 +76,108 @@ int main()
         "resources/skybox/front.jpg",
         "resources/skybox/back.jpg" //If output is wrong then swap last 2.
     };
+    Skybox sky(skyboxLocations, &camera, &projection);
 
-    unsigned int cubemapTexture;
-    glGenTextures(1, &cubemapTexture);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
+    Shader modelShader("shaders/model.vert", "shaders/model.frag");
 
-    unsigned char* data;
-    int width, height, numOfChannels;
-    for (size_t i = 0; i < skyboxLocations.size(); i++)
-    {
-        data = stbi_load(skyboxLocations.at(i).c_str(), &width, &height, &numOfChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
-        }
-        else
-        {
-            printf("ERROR: Failed to load cubemap texture: %s.\n",skyboxLocations.at(i).c_str());
-            glfwTerminate();
-            std::exit(EXIT_FAILURE);
-        }
-    }
+    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    Grid grid;
 
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    std::vector<float> vertices = {
+            0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f, //Bottom left
+            1.f,0.f,0.f,0.f,0.f,0.f,1.f,0.f, //Bottom right
+            0.f,1.f,0.f,0.f,0.f,0.f,0.f,1.f, //Top left
 
-    std::vector<float> cubeVertices = {
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f
+            1.f,0.f,0.f,0.f,0.f,0.f,1.f,0.f, //Top left
+            0.f,1.f,0.f,0.f,0.f,0.f,0.f,1.f, //Bottom right
+            1.f,1.f,0.f,0.f,0.f,0.f,1.f,1.f //Top right
     };
 
-    unsigned int cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glBindVertexArray(cubeVAO);
+    GLuint vaoOne;
+    glGenVertexArrays(1, &vaoOne);
+    glBindVertexArray(vaoOne);
+    
+    GLuint vboOne;
+    glGenBuffers(1, &vboOne);
+    glBindBuffer(GL_ARRAY_BUFFER, vboOne);
 
-    unsigned int cubeVBO;
-    glGenBuffers(1, &cubeVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    //Allocating memory on vram with specific size. NOT BUFFERING DATA
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), 0, GL_DYNAMIC_DRAW);
 
-    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(float), cubeVertices.data(), GL_STATIC_DRAW);
+    //Getting pointer from allocated memory.
+    void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+    if (ptr != nullptr)
+    {
+        //Copying data to given address.
+        std::memcpy(ptr, vertices.data(), sizeof(float) * vertices.size());
+        std::cout << std::hex << "Buffered data to: " << ptr << std::endl;
+    }
+    //Release mapping on address space.
+    glUnmapBuffer(GL_ARRAY_BUFFER);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glm::mat4 view = camera.getViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
+    //Create a second buffer to copy the data into.
+    GLuint vboTwo;
+    glGenBuffers(1, &vboTwo);
+    glBindBuffer(GL_ARRAY_BUFFER, vboTwo);
+
+    glBindBuffer(GL_COPY_READ_BUFFER, vboOne);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, vboTwo);
+
+    //Get data size in bytes.
+    GLint dataSize = 0;
+    glGetBufferParameteriv(GL_COPY_READ_BUFFER, GL_BUFFER_SIZE, &dataSize);
+
+    std::cout << std::dec << dataSize << " bytes will be copied to new buffer in vram." << std::endl;
+
+    //Allocate a memory on vram in specified bytes.
+    glBufferData(GL_COPY_WRITE_BUFFER, dataSize, 0, GL_STATIC_DRAW);
+
+    //Copying data from read target to write target.
+    glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, dataSize);
+
+    GLuint vaoTwo;
+    glGenVertexArrays(1, &vaoTwo);
+    glBindVertexArray(vaoTwo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboTwo);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    stbi_set_flip_vertically_on_load(true);
+    GLuint grassTexture = loadTextureFromDisk("resources/grass.png");
+    Shader vegetableShader("shaders/vegetable.vert", "shaders/vegetable.frag");
+
+    int keyCount = 0;
     while (!glfwWindowShouldClose(window))
     {
-        currentFrame = glfwGetTime(); //Týme one 
-        currentTime = glfwGetTime(); //time two
-        deltaTime = currentFrame - lastFrame; //difference between two times
-        diffTime = currentTime - lastTime; //difference between two times
+        currentFrame = glfwGetTime();
+        currentTime = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        diffTime = currentTime - lastTime;
         lastFrame = currentFrame;
         
         if (diffTime >= 1.0)
@@ -197,10 +190,17 @@ int main()
         glfwPollEvents();
         if (glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window,GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
-        if (glfwGetKey(window,GLFW_KEY_E) == GLFW_PRESS)
-            reflectOrRefract = 0;
-        if (glfwGetKey(window,GLFW_KEY_R) == GLFW_PRESS)
-            reflectOrRefract = 1;
+
+        if ((glfwGetKey(window,GLFW_KEY_E) == GLFW_PRESS) && (keyCount == 0))
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vboOne);
+            void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+            std::memset(ptr, 0, sizeof(float) * vertices.size());
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+
+            std::cout << "Deleted data at: " << ptr << std::endl;
+            keyCount++;
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -215,52 +215,31 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //DRAW BOX.
+        //DRAW WOODEN BOX.
+        modelShader.use();
+
         glm::mat4 model = glm::mat4(1.f);
-        if (reflectOrRefract == 0)
-        {
-            reflectionShader.use();
+        modelShader.setAllMat4(model, view, projection);
 
-            model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
-            reflectionShader.setAllMat4(model, view, projection);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-            reflectionShader.setInt("skybox", 0);
-            glm::vec3 cameraPos = camera.getCameraPosition();
-            reflectionShader.setVec3("viewPosition", cameraPos);
+        woodenBox.draw(modelShader);
 
-            woodenBox.draw(reflectionShader);
-        }
-        else
-        {
-            refractionShader.use();
+        //DRAW VEGETABLE.
+        vegetableShader.use();
+        
+        model = glm::mat4(1.f);
+        model = glm::translate(model, glm::vec3(3.f, 0.f, 0.f));
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.f, 1.f, 0.f));
+        vegetableShader.setAllMat4(model, view, projection);
 
-            model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
-            refractionShader.setAllMat4(model, view, projection);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-            refractionShader.setInt("skybox", 0);
-            glm::vec3 cameraPos = camera.getCameraPosition();
-            refractionShader.setVec3("viewPosition", cameraPos);
+        glBindVertexArray(vaoTwo);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, grassTexture);
+        vegetableShader.setInt("texture_diffuse", 0);
 
-            woodenBox.draw(refractionShader);
-        }
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //DRAW SKYBOX.
-        glDepthFunc(GL_LEQUAL);
-        cubemapShader.use();
-
-        glm::mat4 cubemapView = glm::mat4(glm::mat3(view));
-        cubemapShader.setMat4("view", cubemapView);
-        cubemapShader.setMat4("projection", projection);
-
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        cubemapShader.setInt("skybox", 0);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
+        sky.draw();
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();

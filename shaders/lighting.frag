@@ -62,7 +62,6 @@ uniform PointLight pointLights[NUMBER_OF_POINT_LIGHTS];
 #define NUMBER_OF_SPOTLIGHTS 1
 uniform SpotLight spotLights[NUMBER_OF_SPOTLIGHTS];
 
-
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDirection);
 vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection);
 vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection);
