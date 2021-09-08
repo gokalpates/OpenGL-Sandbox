@@ -1,6 +1,9 @@
 #version 330 core
 
-in vec2 vertexTextureCoordinate;
+in vertexOut
+{
+	vec2 tc; //Name can be different via interface blocks. But order must match.
+} fsIn;
 
 out vec4 fragColor;
 
@@ -12,5 +15,5 @@ uniform Material material;
 
 void main()
 {																		
-	fragColor = vec4(texture(material.diffuse0, vertexTextureCoordinate).rgb,1.0);
+	fragColor = vec4(texture(material.diffuse0, fsIn.tc).rgb,1.0);
 }
