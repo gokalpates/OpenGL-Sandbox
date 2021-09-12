@@ -187,5 +187,8 @@
     <None Include="shaders\reflection.frag" />
     <None Include="shaders\refraction.vert" />
     <None Include="shaders\refraction.frag" />
+    <None Include="shaders\uboTest.vert" />
+    <None Include="shaders\uboTest.frag" />
+    <None Include="shaders\geomTest.geom" />
   </ItemGroup>
 </Project>

@@ -78,34 +78,11 @@ int main()
     };
     Skybox sky(skyboxLocations, &camera, &projection);
 
-    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
-    Shader modelShader("shaders/model.vert", "shaders/model.frag");
-
     Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
-
     Grid grid;
 
-    GLClearError();
-    //CREATE UNIFORM BUFFER OBJECT.
-    unsigned int uniformBufferObject;
-    glGenBuffers(1, &uniformBufferObject);
-
-    //ALLOCATE ENOUGH VRAM FOR 2 MATRICES.
-    glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferObject);
-    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    //BIND UBO TO BINDING POINT 0.
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBufferObject);
-    //BIND RELEVANT UNIFORM BLOCKS TO BINDING POINTS.
-    unsigned int uniformBlockIndex = glGetUniformBlockIndex(modelShader.m_shaderId, "Matrices");
-    glUniformBlockBinding(modelShader.m_shaderId, uniformBlockIndex, 0);
-
-    //BUFFER PROJECTION MATRIX HERE INSTEAD OF RENDER LOOP.
-    //BECAUSE WE WILL SET IT ONCE.
-    glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferObject);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
+    Shader modelShader("shaders/model.vert", "shaders/model.frag");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -137,22 +114,18 @@ int main()
         camera.update();
         view = camera.getViewMatrix();
 
-        //IN EVERY FRAME, UPDATE VIEW MATRIX FOR USE OF SHADERS.
-        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferObject);
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //DRAW WOODEN BOX.
+
+        glm::mat4 model(1.f);
         modelShader.use();
-
-        glm::mat4 model = glm::mat4(1.f);
-        modelShader.setMat4("model", model);
-
+        modelShader.setAllMat4(model, view, projection);
         woodenBox.draw(modelShader);
 
-        //DRAW SKYBOX.
+        gridShader.use();
+        gridShader.setAllMat4(model, view, projection);
+        grid.draw(gridShader);
+
         sky.draw();
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------

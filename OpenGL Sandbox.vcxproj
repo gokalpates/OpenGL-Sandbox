@@ -201,6 +201,7 @@
     <None Include="shaders\blending.vert" />
     <None Include="shaders\fbo.frag" />
     <None Include="shaders\fbo.vert" />
+    <None Include="shaders\geomTest.geom" />
     <None Include="shaders\grid.frag" />
     <None Include="shaders\grid.vert" />
     <None Include="shaders\lighting.frag" />
@@ -221,6 +222,8 @@
     <None Include="shaders\refraction.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
+    <None Include="shaders\uboTest.frag" />
+    <None Include="shaders\uboTest.vert" />
     <None Include="shaders\vegetable.frag" />
     <None Include="shaders\vegetable.vert" />
   </ItemGroup>

@@ -1,9 +1,9 @@
 #version 330 core
 
-in vertexOut
+in VS_OUT
 {
-	vec2 tc; //Name can be different via interface blocks. But order must match.
-} fsIn;
+	vec2 texCoord;
+};
 
 out vec4 fragColor;
 
@@ -14,6 +14,6 @@ struct Material {
 uniform Material material;
 
 void main()
-{																		
-	fragColor = vec4(texture(material.diffuse0, fsIn.tc).rgb,1.0);
+{	
+	fragColor = texture(material.diffuse0, texCoord);
 }

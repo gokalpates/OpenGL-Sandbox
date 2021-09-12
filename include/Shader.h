@@ -15,6 +15,7 @@ class Shader
 {
 public:
 	Shader(std::filesystem::path vertexShaderPath, std::filesystem::path fragmentShaderPath);
+	Shader(std::filesystem::path vertexShaderPath, std::filesystem::path geometryShaderPath, std::filesystem::path fragmentShaderPath);
 	~Shader();
 
 	void use() const;
