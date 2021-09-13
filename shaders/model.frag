@@ -1,6 +1,6 @@
 #version 330 core
 
-in VS_OUT
+in VS_FS
 {
 	vec2 texCoord;
 };

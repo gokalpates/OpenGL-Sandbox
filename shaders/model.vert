@@ -8,7 +8,7 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-out VS_OUT
+out VS_FS
 {
 	vec2 texCoord;
 };

@@ -78,11 +78,11 @@ int main()
     };
     Skybox sky(skyboxLocations, &camera, &projection);
 
-    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
+    stbi_set_flip_vertically_on_load(true); //For backpack model.
+    Model backpack("resources/models/backpack/backpack.obj");
     Grid grid;
 
-    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
-    Shader modelShader("shaders/model.vert", "shaders/model.frag");
+    Shader geometryTestShader("shaders/geometry.vert", "shaders/geometry.geom", "shaders/geometry.frag");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -116,17 +116,12 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        geometryTestShader.use();
 
         glm::mat4 model(1.f);
-        modelShader.use();
-        modelShader.setAllMat4(model, view, projection);
-        woodenBox.draw(modelShader);
-
-        gridShader.use();
-        gridShader.setAllMat4(model, view, projection);
-        grid.draw(gridShader);
-
-        sky.draw();
+        geometryTestShader.setFloat("time", glfwGetTime());
+        geometryTestShader.setAllMat4(model, view, projection);
+        backpack.draw(geometryTestShader);
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();
