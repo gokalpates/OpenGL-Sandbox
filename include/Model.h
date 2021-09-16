@@ -13,13 +13,16 @@
 class Model
 {
 public:
-	Model(std::string path);
+	Model(std::string path, unsigned int instanceCount = 1u, glm::mat4* instancedArray = nullptr);
 
 	void draw(Shader& shader);
 private:
 	std::vector<Mesh> meshes;
 	std::string directory;
 	std::vector<Texture> loadedTextures;
+
+	unsigned int instanceCount;
+	glm::mat4* instancedArray;
 
 	void loadModel(std::string path);
 	unsigned int loadTextureFromDisk(const char* path, std::string directory);

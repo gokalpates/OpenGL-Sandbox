@@ -1,6 +1,8 @@
 #include "Model.h"
 
-Model::Model(std::string path)
+Model::Model(std::string path, unsigned int count, glm::mat4* matricesArray):
+	instanceCount(count),
+	instancedArray(matricesArray)
 {
 	loadModel(path);
 }
@@ -105,7 +107,14 @@ Mesh Model::processMesh(const aiScene* scene, aiMesh* mesh)
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 
-	return Mesh(vertices, indices, textures);
+	if (instanceCount > 1)
+	{
+		return Mesh(vertices, indices, textures, instanceCount, instancedArray);
+	}
+	else
+	{
+		return Mesh(vertices, indices, textures);
+	}
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName)

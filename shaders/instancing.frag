@@ -2,12 +2,18 @@
 
 in VS_FS
 {
-	vec4 color;
+	vec2 texCoord;
 };
 
 out vec4 fragColor;
 
+struct Material {
+	sampler2D diffuse0;
+};
+
+uniform Material material;
+
 void main()
-{
-	fragColor = color;
+{	
+	fragColor = texture(material.diffuse0, texCoord);
 }
