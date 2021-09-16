@@ -16,6 +16,8 @@ public:
 	Model(std::string path);
 
 	void draw(Shader& shader);
+
+	std::vector<unsigned int> getBufferIDs() const;
 private:
 	std::vector<Mesh> meshes;
 	std::string directory;

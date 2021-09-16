@@ -39,6 +39,21 @@ void Mesh::draw(Shader& shader)
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }
 
+unsigned int Mesh::getVAO() const
+{
+	return VAO;
+}
+
+unsigned int Mesh::getVBO() const
+{
+	return VBO;
+}
+
+unsigned int Mesh::getEBO() const
+{
+	return EBO;
+}
+
 void Mesh::setupBuffers()
 {
 	glGenVertexArrays(1, &VAO);
