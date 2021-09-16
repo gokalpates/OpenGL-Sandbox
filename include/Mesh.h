@@ -14,9 +14,6 @@ public:
 
 	void draw(Shader& shader);
 
-	unsigned int getVAO() const;
-	unsigned int getVBO() const;
-	unsigned int getEBO() const;
 private:
 	void setupBuffers();
 

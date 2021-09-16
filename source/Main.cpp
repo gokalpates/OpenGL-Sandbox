@@ -82,261 +82,39 @@ int main()
     Shader instanceModelShader("shaders/instancing.vert", "shaders/instancing.frag");
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Grid grid;
-
-    unsigned int amount = 100000;
+   
+    unsigned int amount = 1000;
     glm::mat4* modelMatrices = new glm::mat4[amount];
     srand(glfwGetTime());
-    float radius = 100.0;
-    float offset = 20.f;
+    float radius = 50.0;
+    float offset = 2.5f;
     for (unsigned int i = 0; i < amount; i++)
     {
         glm::mat4 model = glm::mat4(1.0f);
-    unsigned int index = 0u;
         float angle = (float)i / (float)amount * 360.0f;
-        
+
         float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float x = sin(angle) * radius + displacement;
-        
+
         displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float y = displacement * 0.4f;
-        
+
         displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float z = cos(angle) * radius + displacement;
-        
+
         model = glm::translate(model, glm::vec3(x, y, z));
-        {
+
         float scale = (rand() % 20) / 100.0f + 0.05;
         model = glm::scale(model, glm::vec3(scale));
-    }
+
         float rotAngle = (rand() % 360);
         model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-    glm::vec3 offsets[100];
+
         modelMatrices[i] = model;
     }
-            index++;
+
     Model planet("resources/models/Planet/planet.obj");
-    Model asteroid("resources/models/Asteroid/rock.obj", 100000, modelMatrices);
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        model = glm::scale(model, glm::vec3(4.f, 4.f, 4.f));
-        modelShader.setAllMat4(model, view, projection);
-        planet.draw(modelShader);
-            offsets[index] = glm::vec3(x, y, 0.f);
-        instanceModelShader.use();
-        instanceModelShader.setMat4("view", view);
-        instanceModelShader.setMat4("projection", projection);
-        asteroid.draw(instanceModelShader);
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-    unsigned int index = 0u;
-    glm::vec3 offsets[100];
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            offsets[index] = glm::vec3(x, y, 0.f);
-            index++;
-        }
-    }
-
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    unsigned int VBO1;
-    glGenBuffers(1, &VBO1);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-    
-    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(float), quadVertices.data(), GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    unsigned int VBO2;
-    glGenBuffers(1, &VBO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-
-    glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(glm::vec3), &offsets, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glVertexAttribDivisor(1, 1);
-
-    glBindVertexArray(0);
-
-    Shader instanceTest("shaders/instancing.vert", "shaders/instancing.frag");
+    Model asteroid("resources/models/Asteroid/rock.obj", 1000, modelMatrices);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -372,13 +150,13 @@ int main()
 
         modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
-        gridShader.setAllMat4(model, view, projection);
-        grid.draw(gridShader);
+        modelShader.setAllMat4(model, view, projection);
+        planet.draw(modelShader);
 
-        instanceTest.use();
-        instanceTest.setAllMat4(model, view, projection);
-        glBindVertexArray(VAO);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+        instanceModelShader.use();
+        instanceModelShader.setMat4("view", view);
+        instanceModelShader.setMat4("projection", projection);
+        asteroid.draw(instanceModelShader);
 
         //Be sure to draw skybox last even in all conditions.
         skybox.draw();

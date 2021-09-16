@@ -50,21 +50,6 @@ void Mesh::draw(Shader& shader)
 	}
 }
 
-unsigned int Mesh::getVAO() const
-{
-	return VAO;
-}
-
-unsigned int Mesh::getVBO() const
-{
-	return VBO;
-}
-
-unsigned int Mesh::getEBO() const
-{
-	return EBO;
-}
-
 void Mesh::setupBuffers()
 {
 	glGenVertexArrays(1, &VAO);
