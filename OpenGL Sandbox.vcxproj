@@ -206,6 +206,8 @@
     <None Include="shaders\geometry.vert" />
     <None Include="shaders\grid.frag" />
     <None Include="shaders\grid.vert" />
+    <None Include="shaders\instancing.frag" />
+    <None Include="shaders\instancing.vert" />
     <None Include="shaders\lighting.frag" />
     <None Include="shaders\lighting.vert" />
     <None Include="shaders\lightSource.frag" />

@@ -62,9 +62,6 @@ int main()
 
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
 
     Camera camera(window);
     camera.setCameraSpeed(15.f);
@@ -80,37 +77,61 @@ int main()
         "resources/skybox/back.jpg" //If output is wrong then swap last 2.
     };
     Skybox sky(skyboxLocations, &camera, &projection);
+
+    Shader modelShader("shaders/model.vert", "shaders/model.frag");
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Grid grid;
 
-    Shader modelShader("shaders/model.vert", "shaders/model.frag");
-    Model box("resources/models/Wooden Box/woodenBox.obj");
+    std::vector<float> quadVertices = {
+        0,0,0,
+        1,0,0,
+        0,1,0,
 
-    //Bake offsets.
+        1,0,0,
+        1,1,0,
+        0,1,0
+    };
+
+    //Bake positions.
     unsigned int index = 0u;
     glm::vec3 offsets[100];
-    for (size_t z = 0; z < 20; z=z+2)
+    for (size_t y = 0; y < 10; y++)
     {
-        for (size_t x = 0; x < 20; x=x+2)
+        for (size_t x = 0; x < 10; x++)
         {
-            offsets[index] = glm::vec3(x, 0.f, z);
+            offsets[index] = glm::vec3(x, y, 0.f);
             index++;
         }
     }
 
-    //Set offsets in model shader.
-    modelShader.use();
-    for (size_t i = 0; i < 100; i++)
-    {
-        std::string queryString = "offsets[" + std::to_string(i) + "]";
-        if (i == 50) //Just for debug and demonstration purposes set 50th containers position to 0.f,5.f,0.f.
-        {
-            glm::vec3 temp = glm::vec3(0.f, 5.f, 0.f);
-            modelShader.setVec3(queryString.c_str(), temp);
-            continue;
-        }
-        modelShader.setVec3(queryString.c_str(), offsets[i]);
-    }
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    unsigned int VBO1;
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(float), quadVertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    unsigned int VBO2;
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+
+    glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(glm::vec3), &offsets, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribDivisor(1, 1);
+
+    glBindVertexArray(0);
+
+    Shader instanceTest("shaders/instancing.vert", "shaders/instancing.frag");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -144,17 +165,15 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        modelShader.use();
-        glm::mat4 model = glm::mat4(1.f);
-        modelShader.setMat4("projection", projection);
-        modelShader.setMat4("view", view);
-        modelShader.setMat4("model", model);
-        box.draw(modelShader); //Be aware that mesh classes draw function is altered for instanced drawing.
-
         gridShader.use();
-        model = glm::mat4(1.f);
+        glm::mat4 model = glm::mat4(1.f);
         gridShader.setAllMat4(model, view, projection);
         grid.draw(gridShader);
+
+        instanceTest.use();
+        instanceTest.setAllMat4(model, view, projection);
+        glBindVertexArray(VAO);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
 
         //Be sure to draw sky last even in all conditions.
         sky.draw();

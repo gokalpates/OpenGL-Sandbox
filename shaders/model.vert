@@ -8,8 +8,6 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 offsets[100];
-
 out VS_FS
 {
 	vec2 texCoord;
@@ -17,10 +15,6 @@ out VS_FS
 
 void main()
 {
-	
 	texCoord = textureCoordinate;
-	//Hope that works.
-	vec4 worldPosition = model * vec4(position, 1.0);
-	worldPosition = worldPosition + vec4(offsets[gl_InstanceID], 1.0);
-	gl_Position = projection * view * worldPosition; 
+	gl_Position = projection * view * model * vec4(position, 1.0);
 }
