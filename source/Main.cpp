@@ -64,7 +64,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     Camera camera(window);
-    camera.setCameraSpeed(15.f);
+    camera.setCameraSpeed(50.f);
     glm::mat4 view = camera.getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 1000.f);
 
@@ -83,11 +83,11 @@ int main()
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Grid grid;
 
-    unsigned int amount = 1000;
+    unsigned int amount = 100000;
     glm::mat4* modelMatrices = new glm::mat4[amount];
     srand(glfwGetTime());
-    float radius = 50.0;
-    float offset = 5.f;
+    float radius = 100.0;
+    float offset = 20.f;
     for (unsigned int i = 0; i < amount; i++)
     {
         glm::mat4 model = glm::mat4(1.0f);
@@ -115,7 +115,7 @@ int main()
     }
 
     Model planet("resources/models/Planet/planet.obj");
-    Model asteroid("resources/models/Asteroid/rock.obj", 1000, modelMatrices);
+    Model asteroid("resources/models/Asteroid/rock.obj", 100000, modelMatrices);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -168,6 +168,7 @@ int main()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         counter++;
+
     }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
