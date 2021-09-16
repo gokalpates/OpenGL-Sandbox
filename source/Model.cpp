@@ -13,6 +13,16 @@ void Model::draw(Shader& shader)
 		meshes[i].draw(shader);
 }
 
+std::vector<unsigned int> Model::getBufferIDs() const
+{
+	std::vector<unsigned int> VAOs;
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		VAOs.push_back(meshes.at(i).getVAO());
+	}
+	return VAOs;
+}
+
 void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;

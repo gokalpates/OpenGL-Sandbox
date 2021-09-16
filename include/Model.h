@@ -16,6 +16,8 @@ public:
 	Model(std::string path, unsigned int instanceCount = 1u, glm::mat4* instancedArray = nullptr);
 
 	void draw(Shader& shader);
+
+	std::vector<unsigned int> getBufferIDs() const;
 private:
 	std::vector<Mesh> meshes;
 	std::string directory;

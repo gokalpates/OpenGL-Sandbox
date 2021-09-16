@@ -76,7 +76,7 @@ int main()
         "resources/skybox/front.png",
         "resources/skybox/back.png" //If output is wrong then swap last 2.
     };
-    Skybox sky(skyboxLocations, &camera, &projection);
+    Skybox skybox(skyboxLocations, &camera, &projection);
 
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
     Shader instanceModelShader("shaders/instancing.vert", "shaders/instancing.frag");
@@ -91,7 +91,7 @@ int main()
     for (unsigned int i = 0; i < amount; i++)
     {
         glm::mat4 model = glm::mat4(1.0f);
-
+    unsigned int index = 0u;
         float angle = (float)i / (float)amount * 360.0f;
         
         float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
@@ -104,18 +104,239 @@ int main()
         float z = cos(angle) * radius + displacement;
         
         model = glm::translate(model, glm::vec3(x, y, z));
-
+        {
         float scale = (rand() % 20) / 100.0f + 0.05;
         model = glm::scale(model, glm::vec3(scale));
-
+    }
         float rotAngle = (rand() % 360);
         model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-
+    glm::vec3 offsets[100];
         modelMatrices[i] = model;
     }
-
+            index++;
     Model planet("resources/models/Planet/planet.obj");
     Model asteroid("resources/models/Asteroid/rock.obj", 100000, modelMatrices);
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        model = glm::scale(model, glm::vec3(4.f, 4.f, 4.f));
+        modelShader.setAllMat4(model, view, projection);
+        planet.draw(modelShader);
+            offsets[index] = glm::vec3(x, y, 0.f);
+        instanceModelShader.use();
+        instanceModelShader.setMat4("view", view);
+        instanceModelShader.setMat4("projection", projection);
+        asteroid.draw(instanceModelShader);
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+    unsigned int index = 0u;
+    glm::vec3 offsets[100];
+    for (size_t y = 0; y < 10; y++)
+    {
+        for (size_t x = 0; x < 10; x++)
+        {
+            offsets[index] = glm::vec3(x, y, 0.f);
+            index++;
+        }
+    }
+
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    unsigned int VBO1;
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(float), quadVertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    unsigned int VBO2;
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+
+    glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(glm::vec3), &offsets, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribDivisor(1, 1);
+
+    glBindVertexArray(0);
+
+    Shader instanceTest("shaders/instancing.vert", "shaders/instancing.frag");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -151,17 +372,16 @@ int main()
 
         modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
-        model = glm::scale(model, glm::vec3(4.f, 4.f, 4.f));
-        modelShader.setAllMat4(model, view, projection);
-        planet.draw(modelShader);
+        gridShader.setAllMat4(model, view, projection);
+        grid.draw(gridShader);
 
-        instanceModelShader.use();
-        instanceModelShader.setMat4("view", view);
-        instanceModelShader.setMat4("projection", projection);
-        asteroid.draw(instanceModelShader);
+        instanceTest.use();
+        instanceTest.setAllMat4(model, view, projection);
+        glBindVertexArray(VAO);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
 
-        //Be sure to draw sky last even in all conditions.
-        sky.draw();
+        //Be sure to draw skybox last even in all conditions.
+        skybox.draw();
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();
