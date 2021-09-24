@@ -35,7 +35,6 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 4); //For Multi Sampling
 
     GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", NULL, NULL);
     if (window == NULL)
@@ -63,7 +62,6 @@ int main()
 
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
 
     Camera camera(window);
     camera.setCameraSpeed(5.f);
@@ -86,38 +84,39 @@ int main()
     Shader debugShader("shaders/debug.vert", "shaders/debug.frag");
     Grid grid;
 
-    unsigned int amount = 1000;
-    glm::mat4* modelMatrices = new glm::mat4[amount];
-    srand(glfwGetTime());
-    float radius = 50.0;
-    float offset = 5.f;
-    for (unsigned int i = 0; i < amount; i++)
+    stbi_set_flip_vertically_on_load(true);
+    Model backpack("resources/models/Backpack/backpack.obj");
+
+    int sampling = 8;
+
+    unsigned int msFramebuffer = 0;
+    glGenFramebuffers(1, &msFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, msFramebuffer);
+
+    unsigned int framebufferTexture = 0;
+    glGenTextures(1, &framebufferTexture);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE,framebufferTexture);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, sampling, GL_RGB, screenWidth, screenHeight, GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, framebufferTexture, 0);
+    
+    unsigned int framebufferRenderbuffer = 0;
+    glGenRenderbuffers(1, &framebufferRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, framebufferRenderbuffer);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, sampling, GL_DEPTH24_STENCIL8, screenWidth, screenHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, framebufferRenderbuffer);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-
-        glm::mat4 model = glm::mat4(1.0f);
-        float angle = (float)i / (float)amount * 360.0f;
-
-        float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float x = sin(angle) * radius + displacement;
-
-        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float y = displacement * 0.4f;
-
-        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float z = cos(angle) * radius + displacement;
-
-        model = glm::translate(model, glm::vec3(x, y, z));
-
-        float scale = (rand() % 20) / 100.0f + 0.05;
-        model = glm::scale(model, glm::vec3(scale));
-
-        float rotAngle = (rand() % 360);
-        model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-
-        modelMatrices[i] = model;
+        printf("ERROR: Multi Sampling framebuffer could not created.\n");
+        glfwTerminate();
+        std::exit(EXIT_FAILURE);
     }
 
-    Model woodenBox("resources/models/wooden Box/WoodenBox.obj");
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -149,13 +148,21 @@ int main()
         camera.update();
         view = camera.getViewMatrix();
 
+        glBindFramebuffer(GL_FRAMEBUFFER, msFramebuffer);
+
+        glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        debugShader.use();
+        modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
         modelShader.setAllMat4(model, view, projection);
-        woodenBox.draw(debugShader);
+        backpack.draw(modelShader);
 
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFramebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, screenWidth, screenHeight, 0, 0, screenWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
         //Be sure to draw skybox last even in all conditions.
         //skybox.draw();
 
