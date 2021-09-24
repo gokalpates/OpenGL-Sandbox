@@ -194,5 +194,7 @@
     <None Include="shaders\geometry.geom" />
     <None Include="shaders\instancing.vert" />
     <None Include="shaders\instancing.frag" />
+    <None Include="shaders\debug.vert" />
+    <None Include="shaders\debug.frag" />
   </ItemGroup>
 </Project>

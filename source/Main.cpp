@@ -35,7 +35,8 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	
+    glfwWindowHint(GLFW_SAMPLES, 4); //For Multi Sampling
+
     GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", NULL, NULL);
     if (window == NULL)
     {
@@ -62,9 +63,10 @@ int main()
 
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
 
     Camera camera(window);
-    camera.setCameraSpeed(50.f);
+    camera.setCameraSpeed(5.f);
     glm::mat4 view = camera.getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 1000.f);
 
@@ -81,15 +83,17 @@ int main()
     Shader modelShader("shaders/model.vert", "shaders/model.frag");
     Shader instanceModelShader("shaders/instancing.vert", "shaders/instancing.frag");
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
+    Shader debugShader("shaders/debug.vert", "shaders/debug.frag");
     Grid grid;
-   
+
     unsigned int amount = 1000;
     glm::mat4* modelMatrices = new glm::mat4[amount];
     srand(glfwGetTime());
     float radius = 50.0;
-    float offset = 2.5f;
+    float offset = 5.f;
     for (unsigned int i = 0; i < amount; i++)
     {
+
         glm::mat4 model = glm::mat4(1.0f);
         float angle = (float)i / (float)amount * 360.0f;
 
@@ -113,8 +117,7 @@ int main()
         modelMatrices[i] = model;
     }
 
-    Model planet("resources/models/Planet/planet.obj");
-    Model asteroid("resources/models/Asteroid/rock.obj", 1000, modelMatrices);
+    Model woodenBox("resources/models/wooden Box/WoodenBox.obj");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -148,25 +151,19 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        modelShader.use();
+        debugShader.use();
         glm::mat4 model = glm::mat4(1.f);
         modelShader.setAllMat4(model, view, projection);
-        planet.draw(modelShader);
-
-        instanceModelShader.use();
-        instanceModelShader.setMat4("view", view);
-        instanceModelShader.setMat4("projection", projection);
-        asteroid.draw(instanceModelShader);
+        woodenBox.draw(debugShader);
 
         //Be sure to draw skybox last even in all conditions.
-        skybox.draw();
+        //skybox.draw();
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         counter++;
-
     }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
