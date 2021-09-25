@@ -93,7 +93,7 @@
     <ClCompile Include="source\Skybox.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
-    <ClCompile Include="source\MSFramebuffer.cpp">
+    <ClCompile Include="source\MSFramebufferObject.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,7 +152,7 @@
     <ClInclude Include="include\Skybox.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
-    <ClInclude Include="include\MSFramebuffer.h">
+    <ClInclude Include="include\MSFramebufferObject.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
   </ItemGroup>

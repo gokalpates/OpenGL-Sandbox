@@ -11,7 +11,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "FramebufferObject.h"
-#include "MSFramebuffer.h"
+#include "MSFramebufferObject.h"
 #include "VertexArrayObject.h"
 #include "VertexBufferObject.h"
 #include "Callback.h"
@@ -88,7 +88,7 @@ int main()
     Grid grid;
 
     stbi_set_flip_vertically_on_load(true);
-    Model backpack("resources/models/Backpack/backpack.obj");
+    Model sandTerrain("resources/models/Sand Terrain/sandTerrain.obj");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -128,7 +128,7 @@ int main()
         modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
         modelShader.setAllMat4(model, view, projection);
-        backpack.draw(modelShader);
+        sandTerrain.draw(modelShader);
         
         //Be sure to draw skybox last even in all conditions.
         skybox.draw();
