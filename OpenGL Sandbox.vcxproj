@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\MSFramebuffer.cpp" />
     <ClCompile Include="source\Skybox.cpp" />
     <ClCompile Include="source\FramebufferObject.cpp" />
     <ClCompile Include="source\external\glad.c" />
@@ -189,6 +190,7 @@
     <ClInclude Include="include\PointLight.h" />
     <ClInclude Include="include\SpotLight.h" />
     <ClInclude Include="include\Skybox.h" />
+    <ClInclude Include="include\MSFramebuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\texture.jpg" />

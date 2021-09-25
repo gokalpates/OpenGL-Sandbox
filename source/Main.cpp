@@ -11,6 +11,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "FramebufferObject.h"
+#include "MSFramebuffer.h"
 #include "VertexArrayObject.h"
 #include "VertexBufferObject.h"
 #include "Callback.h"
@@ -67,6 +68,8 @@ int main()
     camera.setCameraSpeed(5.f);
     glm::mat4 view = camera.getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 1000.f);
+    
+    MSFramebufferObject msFramebuffer(window, 8u);
 
     std::vector<std::string> skyboxLocations = {
         "resources/skybox/right.png",
@@ -86,37 +89,6 @@ int main()
 
     stbi_set_flip_vertically_on_load(true);
     Model backpack("resources/models/Backpack/backpack.obj");
-
-    int sampling = 8;
-
-    unsigned int msFramebuffer = 0;
-    glGenFramebuffers(1, &msFramebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, msFramebuffer);
-
-    unsigned int framebufferTexture = 0;
-    glGenTextures(1, &framebufferTexture);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE,framebufferTexture);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, sampling, GL_RGB, screenWidth, screenHeight, GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, framebufferTexture, 0);
-    
-    unsigned int framebufferRenderbuffer = 0;
-    glGenRenderbuffers(1, &framebufferRenderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, framebufferRenderbuffer);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, sampling, GL_DEPTH24_STENCIL8, screenWidth, screenHeight);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, framebufferRenderbuffer);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        printf("ERROR: Multi Sampling framebuffer could not created.\n");
-        glfwTerminate();
-        std::exit(EXIT_FAILURE);
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -148,23 +120,24 @@ int main()
         camera.update();
         view = camera.getViewMatrix();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, msFramebuffer);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glClearColor(0.f, 0.f, 0.f, 1.f);
+        msFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         modelShader.use();
         glm::mat4 model = glm::mat4(1.f);
         modelShader.setAllMat4(model, view, projection);
         backpack.draw(modelShader);
-
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFramebuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBlitFramebuffer(0, 0, screenWidth, screenHeight, 0, 0, screenWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
         //Be sure to draw skybox last even in all conditions.
-        //skybox.draw();
+        skybox.draw();
+
+        msFramebuffer.unbind();
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFramebuffer.getFramebufferObjectId());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, screenWidth, screenHeight, 0, 0, screenWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();
