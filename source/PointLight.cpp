@@ -8,7 +8,7 @@ PointLight::PointLight(Shader& shader) :
 	interruptedShaderProgramId(0),
 	shaderUniformName(""),
 	position(glm::vec3(0.f, 0.f, 0.f)),
-	ambient(glm::vec3(0.02f, 0.02f, 0.02f)),
+	ambient(glm::vec3(0.08f, 0.08f, 0.08f)),
 	diffuse(glm::vec3(0.7f, 0.7f, 0.7f)),
 	specular(glm::vec3(1.f, 1.f, 1.f)),
 	linear(0.09f),

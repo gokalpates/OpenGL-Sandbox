@@ -80,7 +80,7 @@ void main()
 	//Result of all point lights.
 	for(int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++)
 		result += calculatePointLight(pointLights[i], normal, viewDirection);
-
+	
 	//Result of all spotlights.
 	for(int i = 0; i < NUMBER_OF_SPOTLIGHTS; i++)
 		result += calculateSpotLight(spotLights[i], normal, viewDirection);
