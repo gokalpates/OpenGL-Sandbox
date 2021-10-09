@@ -50,6 +50,8 @@ struct SpotLight
 	float outerCutoff;
 };
 
+uniform bool isBlinn;
+
 uniform vec3 viewPosition;
 uniform Material material;
 
@@ -101,14 +103,22 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
 	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse, vertexTextureCoordinates).rgb;
 
 	// Specular lightning calculation.
-	vec3 reflection = reflect(-lightDirection, normal);
+	float specValue = 0.f;
+	if(isBlinn)
+	{
+		vec3 halfwayDirection = normalize(viewDirection + lightDirection);
+		specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
+	}
+	else
+	{
+		vec3 reflectionDirection = reflect(-lightDirection, normal);
+		specValue = pow(max(dot(viewDirection,reflectionDirection), 0.0), material.shininess);
+	}
 
-	float specValue = pow(max(dot(viewDirection,reflection), 0.0), material.shininess);
 	vec3 specular = light.specular * specValue * texture(material.specular, vertexTextureCoordinates).rgb;
 
 	// Calculate result and return.
 	vec3 result = (ambient + diffuse + specular);
-
 	return result;
 }
 
@@ -124,15 +134,24 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection)
 
 	//Diffuse light calculation.
 	vec3 lightDirection = normalize(light.position - vertexFragmentPosition);
-	
+
 	float diffValue = max(dot(normal, lightDirection), 0.0);
 	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse, vertexTextureCoordinates).rgb;
 	diffuse *= attenuation;
 
 	//Specular light calculation.
-	vec3 reflection = reflect(-lightDirection, normal);
+	float specValue = 0.f;
+	if(isBlinn)
+	{
+		vec3 halfwayDirection = normalize(viewDirection + lightDirection);
+		specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
+	}
+	else
+	{
+		vec3 reflectionDirection = reflect(-lightDirection, normal);
+		specValue = pow(max(dot(viewDirection,reflectionDirection), 0.0), material.shininess);
+	}
 
-	float specValue = pow(max(dot(viewDirection,reflection), 0.0), material.shininess);
 	vec3 specular = light.specular * specValue * texture(material.specular, vertexTextureCoordinates).rgb;
 	specular *= attenuation;
 
@@ -157,9 +176,18 @@ vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection)
 	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse,vertexTextureCoordinates).rgb;
 
 	//Specular light calculation.
-	vec3 reflection = reflect(-lightDirection, normal);
+	float specValue = 0.f;
+	if(isBlinn)
+	{
+		vec3 halfwayDirection = normalize(viewDirection + lightDirection);
+		specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
+	}
+	else
+	{
+		vec3 reflectionDirection = reflect(-lightDirection, normal);
+		specValue = pow(max(dot(viewDirection,reflectionDirection), 0.0), material.shininess);
+	}
 	
-	float specValue = pow(max(dot(viewDirection,reflection), 0.0), material.shininess);
 	vec3 specular = light.specular * specValue * texture(material.specular,vertexTextureCoordinates).rgb;
 
 	//Softening edges.

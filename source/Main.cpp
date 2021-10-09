@@ -2,6 +2,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <cmath>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -65,6 +66,10 @@ int main()
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+    glCullFace(GL_FRONT);
+
     Camera camera(window);
     glm::vec3 cameraPosition = camera.getCameraPosition();
     camera.setCameraSpeed(2.f);
@@ -91,85 +96,19 @@ int main()
     Grid grid;
 
     Model sphere("resources/models/sphere/sphere.obj");
-
-    float cubeVertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-    };
-
-    unsigned int cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glBindVertexArray(cubeVAO);
-
-    unsigned int cubeVBO;
-    glGenBuffers(1, &cubeVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    Model house("resources/models/house/house.obj");
 
     lightingShader.use();
-    unsigned int diffuseTexture = loadTextureFromDisk("resources/containerDiffuse.png");
-    lightingShader.setInt("material.diffuse", 0);
+    lightingShader.setFloat("material.shininess", 0.5f);
+    lightingShader.setBool("isBlinn", false);
 
-    unsigned int specularTexture = loadTextureFromDisk("resources/containerSpecular.png");
-    lightingShader.setInt("material.specular", 1);
-
-    lightingShader.setFloat("material.shininess", 64.f);
+    lightSourceShader.use();
+    glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
+    lightSourceShader.setVec3("light.color", lightColor);
 
     PointLight pLightOne(lightingShader);
-    glm::vec3 lightPosition = glm::vec3(1.f, 1.f, 0.f);
+    pLightOne.setAmbient(glm::vec3(0.3f, 0.3f, 0.3f));
+    glm::vec3 lightPosition = glm::vec3(0.f, 0.2f, 0.f);
     pLightOne.setPosition(lightPosition);
 
     while (!glfwWindowShouldClose(window))
@@ -201,43 +140,36 @@ int main()
 
         camera.update();
         view = camera.getViewMatrix();
+        cameraPosition = camera.getCameraPosition();
+
+        lightingShader.use();
+        lightingShader.setVec3("viewPosition", cameraPosition);
+
+        if (glfwGetKey(window,GLFW_KEY_B))
+        {
+            lightingShader.setBool("isBlinn", true);
+        }
+        if (glfwGetKey(window, GLFW_KEY_P))
+        {
+            lightingShader.setBool("isBlinn", false);
+        }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         msFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        lightingShader.use();
         glm::mat4 model = glm::mat4(1.f);
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.f, 1.f, 1.f));
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
         lightingShader.setAllMat4(model, view, projection);
-        cameraPosition = camera.getCameraPosition();
-        lightingShader.setVec3("viewPosition", cameraPosition);
-
-        pLightOne.updateAllUniforms();
-
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, diffuseTexture);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, specularTexture);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        house.draw(lightingShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
         model = glm::translate(model, lightPosition);
         model = glm::scale(model, glm::vec3(0.08f, 0.08f, 0.08f));
         lightSourceShader.setAllMat4(model, view, projection);
-        glm::vec3 color = glm::vec3(1.f, 1.f, 1.f);
-        lightSourceShader.setVec3("light.color", color);
         sphere.draw(lightSourceShader);
-
-        gridShader.use();
-        model = glm::mat4(1.f);
-        gridShader.setAllMat4(model, view, projection);
-        grid.draw(gridShader);
 
         //Be sure to draw skybox last even in all conditions.
         //skybox.draw();
