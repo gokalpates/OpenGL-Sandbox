@@ -138,8 +138,15 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 		if (!isTextureLoadedAlready)
 		{   
 			Texture texture;
-			texture.id = loadTextureFromDisk(string.C_Str(), directory);
 			texture.type = typeName;
+			if (typeName == "diffuse")
+			{
+				texture.id = loadTextureFromDisk(string.C_Str(), directory, true);
+			}
+			else
+			{
+				texture.id = loadTextureFromDisk(string.C_Str(), directory, false);
+			}
 			texture.path = string.C_Str();
 			textures.push_back(texture);
 			loadedTextures.push_back(texture);
@@ -148,7 +155,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 	return textures;
 }
 
-unsigned int Model::loadTextureFromDisk(const char* path, std::string directory)
+unsigned int Model::loadTextureFromDisk(const char* path, std::string directory, bool loadAsGamma)
 {
 	std::string fileName = std::string(path);
 	fileName = directory + '/' + fileName;
@@ -162,17 +169,21 @@ unsigned int Model::loadTextureFromDisk(const char* path, std::string directory)
 	if (data)
 	{
 		GLenum textureFormat = GL_INVALID_ENUM;
+		GLenum internalTextureFormat = GL_INVALID_ENUM;
 		if (numberOfChannels == 1)
 		{
 			textureFormat = GL_RED;
+			internalTextureFormat = GL_RED;
 		}
 		else if (numberOfChannels == 3)
 		{
 			textureFormat = GL_RGB;
+			internalTextureFormat = loadAsGamma ? GL_SRGB : GL_RGB;
 		}
 		else if (numberOfChannels == 4)
 		{
 			textureFormat = GL_RGBA;
+			internalTextureFormat = loadAsGamma ? GL_SRGB_ALPHA : GL_RGBA;
 		}
 		else
 		{
@@ -182,7 +193,7 @@ unsigned int Model::loadTextureFromDisk(const char* path, std::string directory)
 		}
 
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, textureFormat, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalTextureFormat, width, height, 0, textureFormat, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

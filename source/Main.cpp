@@ -39,7 +39,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", glfwGetPrimaryMonitor(), NULL);
     if (window == NULL)
     {
         printf("ERROR: GLFW could not create a window.\n");
@@ -78,6 +78,40 @@ int main()
     
     MSFramebufferObject msFramebuffer(window, 8u);
 
+    std::vector<float> quadVertices = {
+        -1.f,-1.f, 0.f, 0.f, //Bottom left
+         1.f,-1.f, 1.f, 0.f, //Bottom right
+        -1.f, 1.f, 0.f, 1.f, //Top left
+
+        -1.f, 1.f, 0.f, 1.f, //Top left
+         1.f,-1.f, 1.f, 0.f, //Bottom right
+         1.f, 1.f, 1.f, 1.f //Top right
+    };
+    FramebufferObject postProcessFrameBuffer(window, screenWidth,screenHeight);
+
+    Shader frameBufferShader("shaders/fbo.vert", "shaders/fbo.frag");
+
+    unsigned int fboVAO;
+    glGenVertexArrays(1, &fboVAO);
+    glBindVertexArray(fboVAO);
+
+    unsigned int fboVBO;
+    glGenBuffers(1, &fboVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, fboVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(float), quadVertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glBindVertexArray(0);
+
+    glActiveTexture(GL_TEXTURE0);
+    frameBufferShader.setInt("screenTexture", 0);
+
     std::vector<std::string> skyboxLocations = {
         "resources/skybox/right.png",
         "resources/skybox/left.png",
@@ -97,18 +131,23 @@ int main()
 
     Model sphere("resources/models/sphere/sphere.obj");
     Model house("resources/models/house/house.obj");
+    Model woodenFloor("resources/models/woodenFloor/woodenFloor.obj");
 
     lightingShader.use();
-    lightingShader.setFloat("material.shininess", 0.5f);
+    lightingShader.setFloat("material.shininess", 512.f);
     lightingShader.setBool("isBlinn", false);
+
+    frameBufferShader.use();
+    frameBufferShader.setBool("isGammaCorrectionEnabled", true);
 
     lightSourceShader.use();
     glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
     lightSourceShader.setVec3("light.color", lightColor);
 
     PointLight pLightOne(lightingShader);
-    pLightOne.setAmbient(glm::vec3(0.3f, 0.3f, 0.3f));
-    glm::vec3 lightPosition = glm::vec3(0.f, 0.2f, 0.f);
+    pLightOne.setAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
+    pLightOne.setDiffuse(glm::vec3(7.f, 7.f, 7.f));
+    glm::vec3 lightPosition = glm::vec3(0.f, 25.f, 0.f);
     pLightOne.setPosition(lightPosition);
 
     while (!glfwWindowShouldClose(window))
@@ -154,15 +193,25 @@ int main()
             lightingShader.setBool("isBlinn", false);
         }
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        frameBufferShader.use();
+        if (glfwGetKey(window,GLFW_KEY_G))
+        {
+            frameBufferShader.setBool("isGamma", true);
+        }
+        if (glfwGetKey(window, GLFW_KEY_N))
+        {
+            frameBufferShader.setBool("isGamma", false);
+        }
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear default buffer.
 
         msFramebuffer.bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear multisampled buffer.
 
+        lightingShader.use();
         glm::mat4 model = glm::mat4(1.f);
-        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
         lightingShader.setAllMat4(model, view, projection);
-        house.draw(lightingShader);
+        woodenFloor.draw(lightingShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
@@ -177,8 +226,18 @@ int main()
         msFramebuffer.unbind();
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msFramebuffer.getFramebufferObjectId());
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessFrameBuffer.getFramebufferObjectId());
         glBlitFramebuffer(0, 0, screenWidth, screenHeight, 0, 0, screenWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); //Bind default framebuffer.
+        
+        frameBufferShader.use();
+        glBindVertexArray(fboVAO);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, postProcessFrameBuffer.getTextureId());
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         ImGui::Render();

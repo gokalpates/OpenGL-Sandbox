@@ -53,13 +53,13 @@ MSFramebufferObject::~MSFramebufferObject()
 void MSFramebufferObject::bind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId);
-	//Framebuffer has same width and height with screen.
-	//So, we dont need to set viewport.
+	glViewport(0, 0, m_screenWidth, m_screenHeight);
 }
 
 void MSFramebufferObject::unbind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, m_screenWidth, m_screenHeight);
 }
 
 unsigned int MSFramebufferObject::getFramebufferObjectId() const
