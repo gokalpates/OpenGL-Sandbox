@@ -8,6 +8,9 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform mat4 lightSpaceMatrix;
+out vec4 vertexFragmentPositionLightSpace;
+
 out vec3 vertexNormal;
 out vec3 vertexFragmentPosition;
 out vec2 vertexTextureCoordinates;
@@ -20,6 +23,8 @@ void main()
 
 	//Note that this is a very expensive operation. Consider to do that in CPU whenever you scale object.
 	vertexNormal = mat3(transpose(inverse(model))) * normal;
+
+	vertexFragmentPositionLightSpace = lightSpaceMatrix * vec4(vertexFragmentPosition, 1.0);
 
 	gl_Position = projection * view * vec4(vertexFragmentPosition, 1.0);
 }

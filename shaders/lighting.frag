@@ -4,6 +4,9 @@ in vec3 vertexNormal;
 in vec3 vertexFragmentPosition;
 in vec2 vertexTextureCoordinates;
 
+in vec4 vertexFragmentPositionLightSpace;
+uniform sampler2D shadowMap;
+
 out vec4 fragmentColor;
 
 struct Material
@@ -50,8 +53,6 @@ struct SpotLight
 	float outerCutoff;
 };
 
-uniform bool isBlinn;
-
 uniform vec3 viewPosition;
 uniform Material material;
 
@@ -67,6 +68,8 @@ uniform SpotLight spotLights[NUMBER_OF_SPOTLIGHTS];
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDirection);
 vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection);
 vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection);
+
+float calculateShadow(vec4 lightSpaceFragmentPosition);
 
 void main()
 {
@@ -87,6 +90,9 @@ void main()
 	for(int i = 0; i < NUMBER_OF_SPOTLIGHTS; i++)
 		result += calculateSpotLight(spotLights[i], normal, viewDirection);
 
+	//Gamma Correction.
+	result = pow(result,vec3(1.0/2.2));
+
 	//Equals to final color of fragment.
 	fragmentColor = vec4(result, 1.0);
 }
@@ -104,18 +110,18 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
 
 	// Specular lightning calculation.
 	float specValue = 0.f;
-	if(isBlinn)
-	{
-		vec3 halfwayDirection = normalize(viewDirection + lightDirection);
-		specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
-	}
-	else
-	{
-		vec3 reflectionDirection = reflect(-lightDirection, normal);
-		specValue = pow(max(dot(viewDirection,reflectionDirection), 0.0), material.shininess);
-	}
+	vec3 halfwayDirection = normalize(viewDirection + lightDirection);
+	specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 
 	vec3 specular = light.specular * specValue * texture(material.specular, vertexTextureCoordinates).rgb;
+
+	// Shadow calculation.
+	float shadow = calculateShadow(vertexFragmentPositionLightSpace);
+	float inverseShadow = (1.0 - shadow);
+
+	// Apply shadow to diffuse and specular light components.
+	diffuse *= inverseShadow;
+	specular *= inverseShadow;
 
 	// Calculate result and return.
 	vec3 result = (ambient + diffuse + specular);
@@ -141,16 +147,8 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection)
 
 	//Specular light calculation.
 	float specValue = 0.f;
-	if(isBlinn)
-	{
-		vec3 halfwayDirection = normalize(viewDirection + lightDirection);
-		specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
-	}
-	else
-	{
-		vec3 reflectionDirection = reflect(-lightDirection, normal);
-		specValue = pow(max(dot(viewDirection,reflectionDirection), 0.0), material.shininess);
-	}
+	vec3 halfwayDirection = normalize(viewDirection + lightDirection);
+	specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 
 	vec3 specular = light.specular * specValue * texture(material.specular, vertexTextureCoordinates).rgb;
 	specular *= attenuation;
@@ -177,16 +175,8 @@ vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection)
 
 	//Specular light calculation.
 	float specValue = 0.f;
-	if(isBlinn)
-	{
-		vec3 halfwayDirection = normalize(viewDirection + lightDirection);
-		specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
-	}
-	else
-	{
-		vec3 reflectionDirection = reflect(-lightDirection, normal);
-		specValue = pow(max(dot(viewDirection,reflectionDirection), 0.0), material.shininess);
-	}
+	vec3 halfwayDirection = normalize(viewDirection + lightDirection);
+	specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 	
 	vec3 specular = light.specular * specValue * texture(material.specular,vertexTextureCoordinates).rgb;
 
@@ -202,4 +192,24 @@ vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection)
 
 	vec3 result = (ambient + diffuse + specular);
 	return result;
+}
+
+float calculateShadow(vec4 lightSpaceFragmentPosition)
+{
+	//Perform perspective divide.
+	vec3 NDC = lightSpaceFragmentPosition.xyz / lightSpaceFragmentPosition.w;
+
+	//Transform NDC to [0,1] interval for sample shadow map.
+	NDC = NDC * 0.5 + 0.5;
+
+	//Closest fragment depth.
+	float closestFragmentDepth = texture(shadowMap,NDC.xy).r;
+
+	//Current fragment depth.
+	float currentFragmentDepth = NDC.z;
+
+	//Shadow test.
+	//Return 1, if fragment is in shadow.
+	//Return 0, if fragment is not in shadow.
+	return (currentFragmentDepth > closestFragmentDepth) ? 1.0 : 0.0;
 }

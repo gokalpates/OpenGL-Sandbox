@@ -203,6 +203,8 @@
     <None Include="shaders\blending.vert" />
     <None Include="shaders\debug.frag" />
     <None Include="shaders\debug.vert" />
+    <None Include="shaders\debugFramebuffer.frag" />
+    <None Include="shaders\debugFramebuffer.vert" />
     <None Include="shaders\fbo.frag" />
     <None Include="shaders\fbo.vert" />
     <None Include="shaders\geometry.frag" />
@@ -228,6 +230,8 @@
     <None Include="shaders\reflection.vert" />
     <None Include="shaders\refraction.frag" />
     <None Include="shaders\refraction.vert" />
+    <None Include="shaders\shadowMap.frag" />
+    <None Include="shaders\shadowMap.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\uboTest.frag" />
