@@ -26,7 +26,7 @@ private:
 	glm::mat4* instancedArray;
 
 	void loadModel(std::string path);
-	unsigned int loadTextureFromDisk(const char* path, std::string directory, bool loadAsGamma);
+	unsigned int loadTextureFromDisk(const char* path, std::string directory, bool asGamma);
 
 	void processNode(const aiScene* scene, aiNode* node);
 	Mesh processMesh(const aiScene* scene, aiMesh* mesh);

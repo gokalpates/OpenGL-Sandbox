@@ -139,7 +139,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 		{   
 			Texture texture;
 			texture.type = typeName;
-			if (typeName == "diffuse")
+			if (texture.type == "diffuse")
 			{
 				texture.id = loadTextureFromDisk(string.C_Str(), directory, true);
 			}
@@ -155,7 +155,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 	return textures;
 }
 
-unsigned int Model::loadTextureFromDisk(const char* path, std::string directory, bool loadAsGamma)
+unsigned int Model::loadTextureFromDisk(const char* path, std::string directory, bool asGamma)
 {
 	std::string fileName = std::string(path);
 	fileName = directory + '/' + fileName;
@@ -178,12 +178,12 @@ unsigned int Model::loadTextureFromDisk(const char* path, std::string directory,
 		else if (numberOfChannels == 3)
 		{
 			textureFormat = GL_RGB;
-			internalTextureFormat = loadAsGamma ? GL_SRGB : GL_RGB;
+			internalTextureFormat = asGamma ? GL_SRGB : GL_RGB;
 		}
 		else if (numberOfChannels == 4)
 		{
 			textureFormat = GL_RGBA;
-			internalTextureFormat = loadAsGamma ? GL_SRGB_ALPHA : GL_RGBA;
+			internalTextureFormat = asGamma ? GL_SRGB_ALPHA : GL_RGB;
 		}
 		else
 		{

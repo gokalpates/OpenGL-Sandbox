@@ -105,11 +105,11 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //Designate light position.
-    glm::vec3 lightPosition = glm::vec3(0.f, 0.f, 50.f);
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(lightPosition.x, lightPosition.y, -lightPosition.z));
+    glm::vec3 lightPosition = glm::vec3(0.f, 20.f, 20.f);
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(-lightPosition.x, -lightPosition.y, -lightPosition.z));
 
     //Create orthogonal perspective matrix and view matrix located at directional light's position.
-    glm::mat4 shadowMapOrhthogonal = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.1f, 1000.f); //Reference used |10.f| instead of |1.f|. Why?
+    glm::mat4 shadowMapOrhthogonal = glm::ortho(-15.f, 15.f, -15.f, 15.f, 0.1f, 1000.f); //Reference used |10.f| instead of |1.f|. Why?
     glm::mat4 shadowMapView = glm::lookAt(lightPosition, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
     glm::mat4 lightSpaceMatrix = shadowMapOrhthogonal * shadowMapView;
 
@@ -140,12 +140,11 @@ int main()
 
     Model sphere("resources/models/sphere/sphere.obj");
     Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
-    Model woodenFloor("resources/models/woodenFloor/woodenFloor.obj");
-    Model house("resources/models/house/house.obj");
+    Model woodenFloor("resources/models/Wooden Floor/woodenFloor.obj");
 
     //Prepare lighting shader.
     lightingShader.use();
-    lightingShader.setFloat("material.shininess", 512.f);
+    lightingShader.setFloat("material.shininess", 8.f);
     //Bind shadow map at texture slot 15 to avoid overlap with other textures. Note: OpenGL guarantees 16 texture slots.
     lightingShader.setInt("shadowMap", 15);
 
@@ -155,9 +154,6 @@ int main()
 
     DirectionalLight dLightOne(lightingShader);
     dLightOne.setDirection(lightDirection);
-    dLightOne.setAmbient(glm::vec3(0.01f, 0.01f, 0.01f));
-    dLightOne.setDiffuse(glm::vec3(0.7f, 0.7f, 0.7f));
-    dLightOne.setSpecular(glm::vec3(1.f, 1.f, 1.f));
 
     while (!glfwWindowShouldClose(window))
     {
@@ -206,28 +202,11 @@ int main()
         shadowMapShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
         glm::mat4 model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 0.f, 5.f));
+        model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
         shadowMapShader.setMat4("model", model);
         woodenBox.draw(shadowMapShader);
 
         model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 0.f, 10.f));
-        model = glm::scale(model, glm::vec3(2.2f, 2.2f, 2.2f));
-        shadowMapShader.setMat4("model", model);
-        woodenBox.draw(shadowMapShader);
-
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(5.f, 3.f, 15.f));
-        shadowMapShader.setMat4("model", model);
-        woodenBox.draw(shadowMapShader);
-
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(-7.f, 8.f, 9.f));
-        shadowMapShader.setMat4("model", model);
-        woodenBox.draw(shadowMapShader);
-
-        model = glm::mat4(1.f);
-        model = glm::rotate(model, glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
         model = glm::scale(model, glm::vec3(20.f, 1.f, 20.f));
         shadowMapShader.setMat4("model", model);
         woodenFloor.draw(shadowMapShader);
@@ -249,28 +228,11 @@ int main()
         glBindTexture(GL_TEXTURE_2D, depthMap);
 
         model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 0.f, 5.f));
+        model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
         lightingShader.setAllMat4(model, view, projection);
         woodenBox.draw(lightingShader);
 
         model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 0.f, 10.f));
-        model = glm::scale(model, glm::vec3(2.2f, 2.2f, 2.2f));
-        lightingShader.setAllMat4(model, view, projection);
-        woodenBox.draw(lightingShader);
-
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(5.f, 3.f, 15.f));
-        lightingShader.setAllMat4(model, view, projection);
-        woodenBox.draw(lightingShader);
-
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(-7.f, 8.f, 9.f));
-        lightingShader.setAllMat4(model, view, projection);
-        woodenBox.draw(lightingShader);
-
-        model = glm::mat4(1.f);
-        model = glm::rotate(model, glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
         model = glm::scale(model, glm::vec3(20.f, 1.f, 20.f));
         lightingShader.setAllMat4(model, view, projection);
         woodenFloor.draw(lightingShader);

@@ -11,8 +11,8 @@ out vec4 fragmentColor;
 
 struct Material
 {
-	sampler2D diffuse;
-	sampler2D specular;
+	sampler2D diffuse0;
+	sampler2D specular0;
 	float shininess;
 };
 
@@ -100,20 +100,20 @@ void main()
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDirection)
 {
 	// Ambient lightning calculation.
-	vec3 ambient = light.ambient * texture(material.diffuse, vertexTextureCoordinates).rgb;
+	vec3 ambient = light.ambient * texture(material.diffuse0, vertexTextureCoordinates).rgb;
 
 	// Diffuse lightning calculation.
 	vec3 lightDirection = normalize(-light.direction);
 
 	float diffValue = max(dot(normal,lightDirection), 0.0);
-	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse, vertexTextureCoordinates).rgb;
+	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse0, vertexTextureCoordinates).rgb;
 
 	// Specular lightning calculation.
 	float specValue = 0.f;
 	vec3 halfwayDirection = normalize(viewDirection + lightDirection);
 	specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 
-	vec3 specular = light.specular * specValue * texture(material.specular, vertexTextureCoordinates).rgb;
+	vec3 specular = light.specular * specValue * texture(material.specular0, vertexTextureCoordinates).rgb;
 
 	// Shadow calculation.
 	float shadow = calculateShadow(vertexFragmentPositionLightSpace);
@@ -135,14 +135,14 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection)
 	float attenuation = 1.0 / (1.0 + (light.linear * distanceValue) + (light.quadratic * pow(distanceValue, 2)));
 
 	//Ambient light calculation.
-	vec3 ambient = light.ambient * texture(material.diffuse, vertexTextureCoordinates).rgb;
+	vec3 ambient = light.ambient * texture(material.diffuse0, vertexTextureCoordinates).rgb;
 	ambient *= attenuation;
 
 	//Diffuse light calculation.
 	vec3 lightDirection = normalize(light.position - vertexFragmentPosition);
 
 	float diffValue = max(dot(normal, lightDirection), 0.0);
-	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse, vertexTextureCoordinates).rgb;
+	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse0, vertexTextureCoordinates).rgb;
 	diffuse *= attenuation;
 
 	//Specular light calculation.
@@ -150,7 +150,7 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection)
 	vec3 halfwayDirection = normalize(viewDirection + lightDirection);
 	specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 
-	vec3 specular = light.specular * specValue * texture(material.specular, vertexTextureCoordinates).rgb;
+	vec3 specular = light.specular * specValue * texture(material.specular0, vertexTextureCoordinates).rgb;
 	specular *= attenuation;
 
 	//Calculate result and return.
@@ -165,20 +165,20 @@ vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection)
 	float attenuation = 1.0 / (1.0 + (light.linear * distanceValue) + (light.quadratic * pow(distanceValue, 2)));
 
 	//Ambient light calculation.
-	vec3 ambient = light.ambient * texture(material.diffuse,vertexTextureCoordinates).rgb;
+	vec3 ambient = light.ambient * texture(material.diffuse0,vertexTextureCoordinates).rgb;
 
 	//Diffuse light calculation.
 	vec3 lightDirection = normalize(light.position - vertexFragmentPosition);
 
 	float diffValue = max(dot(normal, lightDirection), 0.0);
-	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse,vertexTextureCoordinates).rgb;
+	vec3 diffuse = light.diffuse * diffValue * texture(material.diffuse0,vertexTextureCoordinates).rgb;
 
 	//Specular light calculation.
 	float specValue = 0.f;
 	vec3 halfwayDirection = normalize(viewDirection + lightDirection);
 	specValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 	
-	vec3 specular = light.specular * specValue * texture(material.specular,vertexTextureCoordinates).rgb;
+	vec3 specular = light.specular * specValue * texture(material.specular0,vertexTextureCoordinates).rgb;
 
 	//Softening edges.
 	float theta = dot(lightDirection, normalize(-light.direction));
@@ -211,5 +211,6 @@ float calculateShadow(vec4 lightSpaceFragmentPosition)
 	//Shadow test.
 	//Return 1, if fragment is in shadow.
 	//Return 0, if fragment is not in shadow.
-	return (currentFragmentDepth > closestFragmentDepth) ? 1.0 : 0.0;
+	float bias = 0.0005f;
+	return (currentFragmentDepth > closestFragmentDepth + bias) ? 1.0 : 0.0;
 }
