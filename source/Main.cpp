@@ -79,7 +79,7 @@ int main()
      We have to create ourselves.
     */
 
-    int shadowResolution = 1024;
+    int shadowResolution = 2048;
 
     unsigned int shadowMapFramebuffer = 0u;
     glGenFramebuffers(1, &shadowMapFramebuffer);
@@ -105,7 +105,7 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //Designate light position.
-    glm::vec3 lightPosition = glm::vec3(0.f, 20.f, 20.f);
+    glm::vec3 lightPosition = glm::vec3(10.f, 10.f, 20.f);
     glm::vec3 lightDirection = glm::normalize(glm::vec3(-lightPosition.x, -lightPosition.y, -lightPosition.z));
 
     //Create orthogonal perspective matrix and view matrix located at directional light's position.
@@ -141,6 +141,11 @@ int main()
     Model sphere("resources/models/sphere/sphere.obj");
     Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
     Model woodenFloor("resources/models/Wooden Floor/woodenFloor.obj");
+
+    //Bind temple textures manually.
+    Model temple("resources/models/Temple/Temple.fbx");
+    unsigned int templeDiffuse = loadTextureFromDisk("resources/models/Temple/Temple_Marble_BaseColor.png");
+    unsigned int templeSpecular = loadTextureFromDisk("resources/models/Temple/Temple_Marble_Metallic.png");
 
     //Prepare lighting shader.
     lightingShader.use();
@@ -186,6 +191,11 @@ int main()
         view = camera.getViewMatrix();
         cameraPosition = camera.getCameraPosition();
 
+        lightPosition.x = glm::cos(glfwGetTime()) * 10.f;
+
+        shadowMapView = glm::lookAt(lightPosition, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        lightSpaceMatrix = shadowMapOrhthogonal * shadowMapView;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear default buffer.
 
         msFramebuffer.bind();
@@ -202,9 +212,11 @@ int main()
         shadowMapShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
         glm::mat4 model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
+        model = glm::translate(model, glm::vec3(0.f, 4.2f, 0.f));
+        model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
+        model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
         shadowMapShader.setMat4("model", model);
-        woodenBox.draw(shadowMapShader);
+        temple.draw(shadowMapShader);
 
         model = glm::mat4(1.f);
         model = glm::scale(model, glm::vec3(20.f, 1.f, 20.f));
@@ -228,9 +240,17 @@ int main()
         glBindTexture(GL_TEXTURE_2D, depthMap);
 
         model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 1.f, 0.f));
+        model = glm::translate(model , glm::vec3(0.f, 4.2f, 0.f));
+        model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
+        model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
         lightingShader.setAllMat4(model, view, projection);
-        woodenBox.draw(lightingShader);
+        lightingShader.setInt("material.diffuse0", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, templeDiffuse);
+        lightingShader.setInt("material.specular0", 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, templeSpecular);
+        temple.draw(lightingShader);
 
         model = glm::mat4(1.f);
         model = glm::scale(model, glm::vec3(20.f, 1.f, 20.f));
