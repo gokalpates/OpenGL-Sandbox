@@ -68,8 +68,8 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
-    glCullFace(GL_FRONT);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
 
     MSFramebufferObject msFramebuffer(window, 8u);
     
@@ -93,8 +93,10 @@ int main()
     //Reference used nearest option for filters. Also, used repeat parameter instead of clamp to edge.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    float borderColor[] = { 1.f,1.f,1.f,1.f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     
@@ -191,11 +193,6 @@ int main()
         view = camera.getViewMatrix();
         cameraPosition = camera.getCameraPosition();
 
-        lightPosition.x = glm::cos(glfwGetTime()) * 10.f;
-
-        shadowMapView = glm::lookAt(lightPosition, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-        lightSpaceMatrix = shadowMapOrhthogonal * shadowMapView;
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear default buffer.
 
         msFramebuffer.bind();
@@ -204,7 +201,7 @@ int main()
         //Bind shadow mapping framebuffer and generate shadow map for each frame.
         glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFramebuffer);
         glClear(GL_DEPTH_BUFFER_BIT); //Clear depth buffer because we only have depth attachment.
-        
+
         glViewport(0, 0, shadowResolution, shadowResolution);
 
         //Use shadowMap shader and draw scene.
@@ -219,7 +216,7 @@ int main()
         temple.draw(shadowMapShader);
 
         model = glm::mat4(1.f);
-        model = glm::scale(model, glm::vec3(20.f, 1.f, 20.f));
+        model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
         shadowMapShader.setMat4("model", model);
         woodenFloor.draw(shadowMapShader);
 
@@ -253,7 +250,7 @@ int main()
         temple.draw(lightingShader);
 
         model = glm::mat4(1.f);
-        model = glm::scale(model, glm::vec3(20.f, 1.f, 20.f));
+        model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
         lightingShader.setAllMat4(model, view, projection);
         woodenFloor.draw(lightingShader);
 

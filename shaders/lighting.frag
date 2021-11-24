@@ -208,9 +208,24 @@ float calculateShadow(vec4 lightSpaceFragmentPosition)
 	//Current fragment depth.
 	float currentFragmentDepth = NDC.z;
 
-	//Shadow test.
-	//Return 1, if fragment is in shadow.
-	//Return 0, if fragment is not in shadow.
+	// Z value clamping.
+	if(NDC.z > 1.f) 
+		return 0.0;
+	
+	//Percentage-Closer Filtering and biasing.
+	float shadow = 0.f;
 	float bias = 0.0005f;
-	return (currentFragmentDepth > closestFragmentDepth + bias) ? 1.0 : 0.0;
+	vec2 texelOffset = 1.0 / textureSize(shadowMap, 0);
+
+	for(int y = -1; y < 2; y++)
+	{
+		for(int x = -1; x < 2; x++)
+		{
+			float pcfDepth = texture(shadowMap,NDC.xy + vec2(x,y) * texelOffset).r;
+			shadow += (currentFragmentDepth > pcfDepth + bias ? 1.0 : 0.0);
+		}
+	}
+	
+	shadow /= 9.f;
+	return shadow;
 }
