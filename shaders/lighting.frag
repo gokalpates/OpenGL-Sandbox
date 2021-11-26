@@ -211,7 +211,7 @@ float calculateShadow(vec4 lightSpaceFragmentPosition)
 	// Z value clamping.
 	if(NDC.z > 1.f) 
 		return 0.0;
-	
+
 	//Percentage-Closer Filtering and biasing.
 	float shadow = 0.f;
 	float bias = 0.0005f;
