@@ -232,8 +232,8 @@
     <None Include="shaders\reflection.vert" />
     <None Include="shaders\refraction.frag" />
     <None Include="shaders\refraction.vert" />
-    <None Include="shaders\shadowMap.frag" />
-    <None Include="shaders\shadowMap.vert" />
+    <None Include="shaders\directionalShadowMap.frag" />
+    <None Include="shaders\directionalShadowMap.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\uboTest.frag" />

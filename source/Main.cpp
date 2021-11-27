@@ -12,7 +12,7 @@
 #include "Grid.h"
 #include "Debug.h"
 #include "DirectionalLight.h"
-#include "DirectionalShadowMap.h"
+#include "PointLight.h"
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
@@ -77,16 +77,15 @@ int main()
 
     lightingShader.use();
     lightingShader.setFloat("material.shininess", 8.f);
-    lightingShader.setInt("shadowMap", 15);
 
     lightSourceShader.use();
     glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
     lightSourceShader.setVec3("light.color", lightColor);
 
-    Shader shadowMapShader("shaders/shadowMap.vert", "shaders/shadowMap.frag");
-    DirectionalShadowMap dShadowMap(window);
-    DirectionalLight dLightOne(lightingShader);
-    dLightOne.setDirection(-glm::normalize(dShadowMap.getShadowPosition()));
+    glm::vec3 lightPosition = glm::vec3(0.f, 6.f, 0.f);
+    PointLight pLightOne(lightingShader);
+    pLightOne.setPosition(lightPosition);
+    pLightOne.setAmbient(glm::vec3(0.01f, 0.01f, 0.01f));
 
     while (!glfwWindowShouldClose(window))
     {
@@ -112,45 +111,15 @@ int main()
         view = camera.getViewMatrix();
         cameraPosition = camera.getCameraPosition();
 
-        dShadowMap.setShadowPosition(glm::vec3(sin(glfwGetTime()) * 100.f, 100.f, cos(glfwGetTime()) * 200.f));
-        dLightOne.setDirection(-glm::normalize(dShadowMap.getShadowPosition()));
-
-        if (dShadowMap.isUpdateRequired())
-            dShadowMap.update();
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear default buffer.
 
         msFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear multisampled buffer.
 
-        dShadowMap.bind();
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        shadowMapShader.use();
-        shadowMapShader.setMat4("lightSpaceMatrix", dShadowMap.getLightSpaceMatrix());
-
-        glm::mat4 model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 4.2f, 0.f));
-        model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
-        model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
-        shadowMapShader.setMat4("model", model);
-        temple.draw(shadowMapShader);
-
-        model = glm::mat4(1.f);
-        model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
-        shadowMapShader.setMat4("model", model);
-        woodenFloor.draw(shadowMapShader);
-
-        msFramebuffer.bind();
-
         lightingShader.use();
-        lightingShader.setMat4("lightSpaceMatrix", dShadowMap.getLightSpaceMatrix());
         lightingShader.setVec3("viewPosition", cameraPosition);
 
-        glActiveTexture(GL_TEXTURE15);
-        glBindTexture(GL_TEXTURE_2D, dShadowMap.getDepthTextureId());
-
-        model = glm::mat4(1.f);
+        glm::mat4 model = glm::mat4(1.f);
         model = glm::translate(model , glm::vec3(0.f, 4.2f, 0.f));
         model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
         model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
@@ -170,7 +139,8 @@ int main()
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
-        model = glm::translate(model, dShadowMap.getShadowPosition());
+        model = glm::translate(model, lightPosition);
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
         lightSourceShader.setAllMat4(model, view, projection);
         sphere.draw(lightSourceShader);
 

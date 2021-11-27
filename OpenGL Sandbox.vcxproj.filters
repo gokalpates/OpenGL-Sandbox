@@ -208,8 +208,8 @@
     <None Include="shaders\instancing.frag" />
     <None Include="shaders\debug.vert" />
     <None Include="shaders\debug.frag" />
-    <None Include="shaders\shadowMap.vert" />
-    <None Include="shaders\shadowMap.frag" />
+    <None Include="shaders\directionalShadowMap.vert" />
+    <None Include="shaders\directionalShadowMap.frag" />
     <None Include="shaders\debugFramebuffer.vert" />
     <None Include="shaders\debugFramebuffer.frag" />
   </ItemGroup>
