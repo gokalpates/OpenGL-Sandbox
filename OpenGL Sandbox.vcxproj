@@ -228,6 +228,9 @@
     <None Include="shaders\modelLoadingLighting.vert" />
     <None Include="shaders\objectOutlining.frag" />
     <None Include="shaders\objectOutlining.vert" />
+    <None Include="shaders\pointShadowMap.frag" />
+    <None Include="shaders\pointShadowMap.geom" />
+    <None Include="shaders\pointShadowMap.vert" />
     <None Include="shaders\reflection.frag" />
     <None Include="shaders\reflection.vert" />
     <None Include="shaders\refraction.frag" />

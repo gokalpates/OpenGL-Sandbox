@@ -4,10 +4,17 @@ in vec3 vertexNormal;
 in vec3 vertexFragmentPosition;
 in vec2 vertexTextureCoordinates;
 
-in vec4 vertexFragmentPositionLightSpace;
-uniform sampler2D shadowMap;
-
 out vec4 fragmentColor;
+
+uniform vec3 viewPosition;
+uniform float far;
+
+// Directional Shadow.
+in vec4 vertexFragmentPositionLightSpace;
+uniform sampler2D directionalShadowMap;
+
+// Point Shadow.
+uniform samplerCube pointShadowMap;
 
 struct Material
 {
@@ -53,7 +60,6 @@ struct SpotLight
 	float outerCutoff;
 };
 
-uniform vec3 viewPosition;
 uniform Material material;
 
 #define NUMBER_OF_DIRECTIONAL_LIGHTS 1
@@ -69,7 +75,8 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
 vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection);
 vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection);
 
-float calculateShadow(vec4 lightSpaceFragmentPosition);
+float calculateDirectionalShadow(vec4 lightSpaceFragmentPosition);
+float calculatePointShadow(PointLight light, vec3 fragmentPosition);
 
 void main()
 {
@@ -116,7 +123,7 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
 	vec3 specular = light.specular * specValue * texture(material.specular0, vertexTextureCoordinates).rgb;
 
 	// Shadow calculation.
-	float shadow = calculateShadow(vertexFragmentPositionLightSpace);
+	float shadow = calculateDirectionalShadow(vertexFragmentPositionLightSpace);
 	float inverseShadow = (1.0 - shadow);
 
 	// Apply shadow to diffuse and specular light components.
@@ -152,6 +159,14 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDirection)
 
 	vec3 specular = light.specular * specValue * texture(material.specular0, vertexTextureCoordinates).rgb;
 	specular *= attenuation;
+
+	//Shadow calculation.
+	float shadow = calculatePointShadow(light,vertexFragmentPosition);
+	float inverseShadow = (1.0 - shadow);
+
+	//Aplly shadow to diffuse and specular light components.
+	diffuse *= inverseShadow;
+	specular *= inverseShadow;
 
 	//Calculate result and return.
 	vec3 result = (ambient + diffuse + specular);
@@ -194,7 +209,7 @@ vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 viewDirection)
 	return result;
 }
 
-float calculateShadow(vec4 lightSpaceFragmentPosition)
+float calculateDirectionalShadow(vec4 lightSpaceFragmentPosition)
 {
 	//Perform perspective divide.
 	vec3 NDC = lightSpaceFragmentPosition.xyz / lightSpaceFragmentPosition.w;
@@ -203,7 +218,7 @@ float calculateShadow(vec4 lightSpaceFragmentPosition)
 	NDC = NDC * 0.5 + 0.5;
 
 	//Closest fragment depth.
-	float closestFragmentDepth = texture(shadowMap,NDC.xy).r;
+	float closestFragmentDepth = texture(directionalShadowMap,NDC.xy).r;
 
 	//Current fragment depth.
 	float currentFragmentDepth = NDC.z;
@@ -215,17 +230,36 @@ float calculateShadow(vec4 lightSpaceFragmentPosition)
 	//Percentage-Closer Filtering and biasing.
 	float shadow = 0.f;
 	float bias = 0.0005f;
-	vec2 texelOffset = 1.0 / textureSize(shadowMap, 0);
+	vec2 texelOffset = 1.0 / textureSize(directionalShadowMap, 0);
 
 	for(int y = -1; y < 2; y++)
 	{
 		for(int x = -1; x < 2; x++)
 		{
-			float pcfDepth = texture(shadowMap,NDC.xy + vec2(x,y) * texelOffset).r;
+			float pcfDepth = texture(directionalShadowMap,NDC.xy + vec2(x,y) * texelOffset).r;
 			shadow += (currentFragmentDepth > pcfDepth + bias ? 1.0 : 0.0);
 		}
 	}
 	
 	shadow /= 9.f;
+	return shadow;
+}
+
+float calculatePointShadow(PointLight light, vec3 fragmentPosition)
+{
+	//Sampling direction.
+	vec3 fragToLight = fragmentPosition - light.position;
+
+	//Closest fragment depth.
+	float closestFragmentDepth = texture(pointShadowMap,fragToLight).r;
+	closestFragmentDepth *= far; //Convert it back to [0,far] interval.
+
+	//Current fragment depth.
+	float currentFragmentDepth = length(fragToLight);
+	
+	//Shadow calculating with bias value.
+	float bias = 0.0005f;
+	float shadow = currentFragmentDepth > closestFragmentDepth + bias ? 1.0 : 0.0;
+
 	return shadow;
 }

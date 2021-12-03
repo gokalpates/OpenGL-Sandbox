@@ -212,5 +212,8 @@
     <None Include="shaders\directionalShadowMap.frag" />
     <None Include="shaders\debugFramebuffer.vert" />
     <None Include="shaders\debugFramebuffer.frag" />
+    <None Include="shaders\pointShadowMap.vert" />
+    <None Include="shaders\pointShadowMap.geom" />
+    <None Include="shaders\pointShadowMap.frag" />
   </ItemGroup>
 </Project>

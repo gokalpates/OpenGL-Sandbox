@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -21,8 +22,7 @@ size_t counter = 0;
 
 int main()
 {
-    int screenWidth = 2560;
-    int screenHeight = 1440;
+    int screenWidth = 2560, screenHeight = 1440;
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -48,10 +48,6 @@ int main()
 
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
 
     MSFramebufferObject msFramebuffer(window, 8u);
 
@@ -87,6 +83,41 @@ int main()
     pLightOne.setPosition(lightPosition);
     pLightOne.setAmbient(glm::vec3(0.01f, 0.01f, 0.01f));
 
+
+    //GENERATE POINT SHADOW CUBEMAP AND FB.
+    unsigned int framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    
+    unsigned int cubemap;
+    glGenTextures(1, &cubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+
+    int shadowResolution = 1024;
+    for (int i = 0; i < 6; i++)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, shadowResolution, shadowResolution, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //CREATE PROJECTION MATRICES.
+    float near = 0.1f, far = 1000.f;
+    glm::mat4 shadowProjection = glm::perspective(glm::radians(90.f), 1.f, near, far);
+
+    //CREATE SHADOW MAP SHADERS.
+    Shader shadowMapShader("shaders/pointShadowMap.vert", "shaders/pointShadowMap.geom", "shaders/pointShadowMap.frag");
+
     while (!glfwWindowShouldClose(window))
     {
         currentFrame = glfwGetTime();
@@ -111,15 +142,59 @@ int main()
         view = camera.getViewMatrix();
         cameraPosition = camera.getCameraPosition();
 
+        lightPosition.x = std::cosf(glfwGetTime()) * 10.f;
+        pLightOne.setPosition(lightPosition);
+
+        //IN EVERY FRAME CALCULATE NEW MATRICES.
+        std::vector<glm::mat4> shadowMatrices;
+        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
+        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
+        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
+        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)));
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear default buffer.
+
+        //CALCULATE SHADOW MAPS.
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glViewport(0, 0, shadowResolution, shadowResolution);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        shadowMapShader.use();
+        shadowMapShader.setFloat("far", far);
+        shadowMapShader.setVec3("lightPosition", lightPosition);
+        for (size_t i = 0; i < shadowMatrices.size(); i++)
+        {
+            std::string uniformName = std::string("shadowMatrices[") + std::to_string(i) + std::string("]");
+            shadowMapShader.setMat4(uniformName.c_str(), shadowMatrices.at(i));
+        }
+        glm::mat4 model = glm::mat4(1.f);
+        model = glm::translate(model, glm::vec3(0.f, 4.2f, 0.f));
+        model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
+        model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
+        shadowMapShader.setMat4("model", model);
+        temple.draw(shadowMapShader);
+
+        model = glm::mat4(1.f);
+        model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
+        woodenFloor.draw(shadowMapShader);
+
+        model = glm::mat4(1.f);
+        model = glm::translate(model, glm::vec3(0.f, 6.f, 0.f));
+        shadowMapShader.setMat4("model", model);
+        woodenBox.draw(shadowMapShader);
 
         msFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear multisampled buffer.
 
         lightingShader.use();
         lightingShader.setVec3("viewPosition", cameraPosition);
+        lightingShader.setFloat("far", far);
+        lightingShader.setInt("pointShadowMap", 15);
+        glActiveTexture(GL_TEXTURE15);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
 
-        glm::mat4 model = glm::mat4(1.f);
+        model = glm::mat4(1.f);
         model = glm::translate(model , glm::vec3(0.f, 4.2f, 0.f));
         model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
         model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
@@ -136,6 +211,11 @@ int main()
         model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
         lightingShader.setAllMat4(model, view, projection);
         woodenFloor.draw(lightingShader);
+
+        model = glm::mat4(1.f);
+        model = glm::translate(model, glm::vec3(0.f, 6.f, 0.f));
+        lightingShader.setAllMat4(model, view, projection);
+        woodenBox.draw(lightingShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
