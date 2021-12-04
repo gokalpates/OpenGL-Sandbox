@@ -118,6 +118,17 @@ int main()
     //CREATE SHADOW MAP SHADERS.
     Shader shadowMapShader("shaders/pointShadowMap.vert", "shaders/pointShadowMap.geom", "shaders/pointShadowMap.frag");
 
+
+    //IN EVERY FRAME CALCULATE NEW MATRICES.
+    std::vector<glm::mat4> shadowMatrices;
+    shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+    shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+    shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
+    shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
+    shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
+    shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)));
+
+
     while (!glfwWindowShouldClose(window))
     {
         currentFrame = glfwGetTime();
@@ -141,18 +152,6 @@ int main()
         camera.update();
         view = camera.getViewMatrix();
         cameraPosition = camera.getCameraPosition();
-
-        lightPosition.x = std::cosf(glfwGetTime()) * 10.f;
-        pLightOne.setPosition(lightPosition);
-
-        //IN EVERY FRAME CALCULATE NEW MATRICES.
-        std::vector<glm::mat4> shadowMatrices;
-        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
-        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
-        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
-        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
-        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
-        shadowMatrices.push_back(shadowProjection * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear default buffer.
 
@@ -178,11 +177,6 @@ int main()
         model = glm::mat4(1.f);
         model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
         woodenFloor.draw(shadowMapShader);
-
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 6.f, 0.f));
-        shadowMapShader.setMat4("model", model);
-        woodenBox.draw(shadowMapShader);
 
         msFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear multisampled buffer.
@@ -211,11 +205,6 @@ int main()
         model = glm::scale(model, glm::vec3(40.f, 1.f, 40.f));
         lightingShader.setAllMat4(model, view, projection);
         woodenFloor.draw(lightingShader);
-
-        model = glm::mat4(1.f);
-        model = glm::translate(model, glm::vec3(0.f, 6.f, 0.f));
-        lightingShader.setAllMat4(model, view, projection);
-        woodenBox.draw(lightingShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);

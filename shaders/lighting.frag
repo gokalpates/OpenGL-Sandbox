@@ -258,8 +258,32 @@ float calculatePointShadow(PointLight light, vec3 fragmentPosition)
 	float currentFragmentDepth = length(fragToLight);
 	
 	//Shadow calculating with bias value.
+	/*
 	float bias = 0.0005f;
 	float shadow = currentFragmentDepth > closestFragmentDepth + bias ? 1.0 : 0.0;
+	return shadow;
+	*/
 
+	//PCF
+	float shadow = 0.f;
+	float bias = 0.0005f;
+	float interval = 0.1f;
+	float sampleCount = 4.f;
+	float incrementValue = interval / (sampleCount * 0.5f);
+	for(float x = -interval; x < interval; x+=incrementValue)
+	{
+		for(float y = -interval; y < interval; y+=incrementValue)
+		{
+			for(float z = -interval; z < interval; z += incrementValue)
+			{
+				closestFragmentDepth = texture(pointShadowMap, fragToLight + vec3(x,y,z)).r;
+				closestFragmentDepth *= far;
+				if(currentFragmentDepth > closestFragmentDepth + bias)
+					shadow += 1.f;
+			}
+		}
+	}
+
+	shadow /= pow(sampleCount,3);
 	return shadow;
 }
