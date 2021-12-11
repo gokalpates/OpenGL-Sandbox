@@ -21,7 +21,7 @@ void main()
 
 	vertexFragmentPosition = vec3(model * vec4(position , 1.0));
 
-	//Note that this is a very expensive operation. Consider to do that in CPU whenever you scale object.
+	//Note that this is expensive operation. Consider to do that in CPU whenever you scale object.
 	vertexNormal = mat3(transpose(inverse(model))) * normal;
 
 	vertexFragmentPositionLightSpace = lightSpaceMatrix * vec4(vertexFragmentPosition, 1.0);

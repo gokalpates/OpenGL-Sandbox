@@ -201,6 +201,8 @@
   <ItemGroup>
     <None Include="shaders\axis.frag" />
     <None Include="shaders\axis.vert" />
+    <None Include="shaders\basicLight.frag" />
+    <None Include="shaders\basicLight.vert" />
     <None Include="shaders\blending.frag" />
     <None Include="shaders\blending.vert" />
     <None Include="shaders\debug.frag" />

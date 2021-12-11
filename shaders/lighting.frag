@@ -256,15 +256,8 @@ float calculatePointShadow(PointLight light, vec3 fragmentPosition)
 
 	//Current fragment depth.
 	float currentFragmentDepth = length(fragToLight);
-	
-	//Shadow calculating with bias value.
-	/*
-	float bias = 0.0005f;
-	float shadow = currentFragmentDepth > closestFragmentDepth + bias ? 1.0 : 0.0;
-	return shadow;
-	*/
 
-	//PCF
+	//Percentage-Closer Filtering and biasing.
 	float shadow = 0.f;
 	float bias = 0.0005f;
 	float interval = 0.1f;
