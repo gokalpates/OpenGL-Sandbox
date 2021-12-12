@@ -56,7 +56,40 @@ int main()
     Grid grid;
 
     //Resources.
-    Model woodenBox("resources/models/Wooden Box/woodenBox.obj");
+    std::vector<float> vertices = {
+        //Position  //Normal    //Textures
+        0.f,0.f,0.f,0.f,0.f,1.f,0.f,0.f,
+        1.f,0.f,0.f,0.f,0.f,1.f,1.f,0.f,
+        1.f,1.f,0.f,0.f,0.f,1.f,1.f,1.f,
+
+        0.f,0.f,0.f,0.f,0.f,1.f,0.f,0.f,
+        1.f,1.f,0.f,0.f,0.f,1.f,1.f,1.f,
+        0.f,1.f,0.f,0.f,0.f,1.f,0.f,1.f
+    };
+
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+    glBindVertexArray(0);
+
+    unsigned int diffuseMap = loadTextureFromDisk("resources/brickwall.jpg");
+    unsigned int normalMap = loadTextureFromDisk("resources/brickwall_normal.jpg");
 
     //Shaders.
     Shader lighting("shaders/basicLight.vert", "shaders/basicLight.frag");
@@ -68,7 +101,7 @@ int main()
     glm::vec3 cameraPosition = glm::vec3(0.f);
 
     //Light.
-    glm::vec3 lightPosition = glm::vec3(3.f, 3.f, 0.f);
+    glm::vec3 lightPosition = glm::vec3(0.5f, 0.5f, 2.f);
     glm::vec3 lightAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
     glm::vec3 lightDiffuse = glm::vec3(0.7f, 0.7f, 0.7f);
     glm::vec3 lightSpecular = glm::vec3(1.f, 1.f, 1.f);
@@ -78,8 +111,16 @@ int main()
     lighting.setVec3("light.ambient", lightAmbient);
     lighting.setVec3("light.diffuse", lightDiffuse);
     lighting.setVec3("light.specular", lightSpecular);
-    lighting.setFloat("material.shininess", 64.f);
     lighting.setVec3("light.position", lightPosition);
+    lighting.setFloat("material.shininess", 32.f);
+
+    lighting.setInt("material.diffuse0", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, diffuseMap);
+
+    lighting.setInt("material.normal0", 2);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, normalMap);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -103,10 +144,16 @@ int main()
 
         lighting.use();
         lighting.setVec3("scene.viewPosition", cameraPosition);
+        lightPosition.x = glm::cos(glfwGetTime()) * 5.f;
+        lighting.setVec3("light.position", lightPosition);
 
         glfwPollEvents();
         if (glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window,GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
+        if (glfwGetKey(window,GLFW_KEY_E))
+            lighting.setBool("scene.normalMapEnabled", true);
+        if (glfwGetKey(window, GLFW_KEY_R))
+            lighting.setBool("scene.normalMapEnabled", false);
 
         MSFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -114,7 +161,8 @@ int main()
         lighting.use();
         glm::mat4 model = glm::mat4(1.f);
         lighting.setAllMat4(model, view, projection);
-        woodenBox.draw(lighting);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         gridShader.use();
         model = glm::mat4(1.f);

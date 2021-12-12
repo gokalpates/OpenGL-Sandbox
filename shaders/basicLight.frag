@@ -15,6 +15,7 @@ struct Material
 {
 	sampler2D diffuse0;
 	sampler2D specular0;
+	sampler2D normal0;
 	float shininess;
 };
 
@@ -30,6 +31,7 @@ struct Light
 struct Scene
 {
 	vec3 viewPosition;
+	bool normalMapEnabled;
 };
 
 //Initialise components.
@@ -42,7 +44,17 @@ void main()
 	//Necessary pre-calculations.
 	vec3 diffuseSample = texture(material.diffuse0, fsIn.textureCoords).rgb;
 	vec3 specularSample = texture(material.specular0, fsIn.textureCoords).rgb;
-	vec3 normal = normalize(fsIn.normal);
+	
+	vec3 normal = vec3(0.f,0.f,0.f);
+	if(scene.normalMapEnabled)
+	{
+		normal = texture(material.normal0,fsIn.textureCoords).rgb; //Values are between [0,1] interval.
+		normal = normalize((normal * 2.0) - 1.0);
+	}
+	else
+	{
+		normal = normalize(fsIn.normal);
+	}
 
 	//Ambient light.
 	vec3 ambient = diffuseSample * light.ambient;
@@ -60,9 +72,6 @@ void main()
 	float specAngleValue = pow(max(dot(normal,halfwayDirection),0.0), material.shininess);
 	vec3 specular = specularSample * specAngleValue * light.specular;
 
-	//Gamma correction.
 	vec3 result = ambient + diffuse + specular;
-	result = pow(result,vec3(1.0/2.2));
-
 	fragColor = vec4(result,1.0);
 }
