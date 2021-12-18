@@ -23,14 +23,14 @@ void Grid::setupBuffers()
 {
 	std::vector<Vertex> vertices = {
 		// X axis.
-		Vertex(-100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
-		Vertex(100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
+		Vertex(-100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
+		Vertex(100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
 		// Y axis.
-		Vertex(0.f,-100.f,0.f,0.f,0.f,0.f,0.f,0.f),
-		Vertex(0.f,100.f,0.f,0.f,0.f,0.f,0.f,0.f),
+		Vertex(0.f,-100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
+		Vertex(0.f,100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
 		// Z axis.
-		Vertex(0.f,0.f,-100.f,0.f,0.f,0.f,0.f,0.f),
-		Vertex(0.f,0.f,100.f,0.f,0.f,0.f,0.f,0.f)
+		Vertex(0.f,0.f,-100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f),
+		Vertex(0.f,0.f,100.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f,0.f)
 	};
 
 	glGenVertexArrays(1, &VAO);

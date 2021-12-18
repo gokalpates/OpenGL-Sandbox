@@ -16,7 +16,7 @@ void Model::draw(Shader& shader)
 void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -84,6 +84,25 @@ Mesh Model::processMesh(const aiScene* scene, aiMesh* mesh)
 			vertex.texCoordinate = glm::vec2(0.f, 0.f);
 		}
 
+		if (mesh->HasTangentsAndBitangents())
+		{
+			glm::vec3 tangent, bitangent;
+			tangent.x = mesh->mTangents[i].x;
+			tangent.y = mesh->mTangents[i].y;
+			tangent.z = mesh->mTangents[i].z;
+			vertex.tangent = tangent;
+
+			bitangent.x = mesh->mBitangents[i].x;
+			bitangent.y = mesh->mBitangents[i].y;
+			bitangent.z = mesh->mBitangents[i].z;
+			vertex.bitangent = bitangent;
+		}
+		else
+		{
+			vertex.tangent = glm::vec3(0.f, 0.f, 0.f);
+			vertex.bitangent = glm::vec3(0.f, 0.f, 0.f);
+		}
+
 		vertices.push_back(vertex);
 	}
 
@@ -105,6 +124,9 @@ Mesh Model::processMesh(const aiScene* scene, aiMesh* mesh)
 
 		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "normal");
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
 
 	if (instanceCount > 1)
@@ -142,6 +164,10 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTexture
 			if (texture.type == "diffuse")
 			{
 				texture.id = loadTextureFromDisk(string.C_Str(), directory, true);
+			}
+			else if(texture.type == "specular")
+			{
+				texture.id = loadTextureFromDisk(string.C_Str(), directory, false);
 			}
 			else
 			{

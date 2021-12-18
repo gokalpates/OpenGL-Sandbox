@@ -6,6 +6,7 @@ in VS_FS
 	vec3 fragPosition;
 	vec3 normal;
 	vec2 textureCoords;
+	mat3 TBN;
 } fsIn;
 
 out vec4 fragColor;
@@ -49,7 +50,8 @@ void main()
 	if(scene.normalMapEnabled)
 	{
 		normal = texture(material.normal0,fsIn.textureCoords).rgb; //Values are between [0,1] interval.
-		normal = normalize((normal * 2.0) - 1.0);
+		normal = (normal * 2.0) - 1.0;
+		normal = normalize(fsIn.TBN * normal);
 	}
 	else
 	{
