@@ -20,13 +20,14 @@ out VS_FS
 
 void main()
 {
+	vsOut.fragPosition = vec3(model * vec4(position, 1.0));
+	vsOut.normal = mat3(transpose(inverse(model))) * normal; //Check here because normalize cause errors.
+
 	vec3 T = normalize(vec3(model * vec4(tangent, 0.f)));
 	vec3 B = normalize(vec3(model * vec4(bitangent, 0.f)));
 	vec3 N = normalize(vec3(model * vec4(normal,0.f)));
 	
 	vsOut.TBN = mat3(T,B,N);
-	vsOut.fragPosition = vec3(model * vec4(position, 1.0));
-	vsOut.normal = mat3(transpose(inverse(model))) * normal; //Check here because normalize cause errors.
 	vsOut.textureCoords = textureCoords;
 	gl_Position = projection * view * vec4(vsOut.fragPosition, 1.0);
 }

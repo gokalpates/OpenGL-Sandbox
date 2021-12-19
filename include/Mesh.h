@@ -19,6 +19,8 @@ private:
 
 	unsigned int VAO, VBO, EBO;
 
+	unsigned int elementBufferSize;
+
 	unsigned int instanceCount;
 	unsigned int instanceVBO;
 	glm::mat4* instancedArray;

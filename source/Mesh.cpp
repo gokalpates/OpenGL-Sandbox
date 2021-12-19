@@ -11,6 +11,11 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 	this->instanceVBO = 0u;
 
 	setupBuffers();
+
+	this->elementBufferSize = indices.size();
+
+	this->vertices.clear();
+	this->indices.clear();
 }
 
 void Mesh::draw(Shader& shader)
@@ -48,11 +53,11 @@ void Mesh::draw(Shader& shader)
 	glBindVertexArray(VAO);
 	if (instanceCount > 1)
 	{
-		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceCount);
+		glDrawElementsInstanced(GL_TRIANGLES, elementBufferSize, GL_UNSIGNED_INT, 0, instanceCount);
 	}
 	else
 	{
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, elementBufferSize, GL_UNSIGNED_INT, 0);
 	}
 }
 

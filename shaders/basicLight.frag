@@ -71,9 +71,13 @@ void main()
 	vec3 viewDirection = normalize(scene.viewPosition - fsIn.fragPosition);
 	vec3 halfwayDirection = normalize(lightDirection + viewDirection);
 
-	float specAngleValue = pow(max(dot(normal,halfwayDirection),0.0), material.shininess);
+	float specAngleValue = pow(max(dot(normal,halfwayDirection), 0.0), material.shininess * 4.f);
 	vec3 specular = specularSample * specAngleValue * light.specular;
 
 	vec3 result = ambient + diffuse + specular;
+
+	//Gamma correction.
+	result = pow(result,vec3(1.0/2.2));
+
 	fragColor = vec4(result,1.0);
 }

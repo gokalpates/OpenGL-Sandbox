@@ -65,15 +65,14 @@ int main()
     glm::vec3 cameraPosition = glm::vec3(0.f);
 
     //Light.
-    glm::vec3 lightPosition = glm::vec3(0.f, 0.f, 5.f);
+    glm::vec3 lightPosition = glm::vec3(3.f, 3.f, 3.f);
     glm::vec3 lightAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
     glm::vec3 lightDiffuse = glm::vec3(0.7f, 0.7f, 0.7f);
     glm::vec3 lightSpecular = glm::vec3(1.f, 1.f, 1.f);
 
     //Resources.
-    stbi_set_flip_vertically_on_load(true);
-    Model box("resources/models/Wooden Box/woodenBox.obj");
-    Model sphere("resources/models/sphere/sphere.obj");
+    Model sphere("resources/objects/sphere/sphere.obj");
+    Model cyborg("resources/objects/cyborg/cyborg.obj");
 
     //Set light uniforms.
     lightingShader.use();
@@ -81,7 +80,7 @@ int main()
     lightingShader.setVec3("light.diffuse", lightDiffuse);
     lightingShader.setVec3("light.specular", lightSpecular);
     lightingShader.setVec3("light.position", lightPosition);
-    lightingShader.setFloat("material.shininess", 32.f);
+    lightingShader.setFloat("material.shininess", 4.f);
 
     lightSourceShader.use();
     lightSourceShader.setVec3("light.color", lightSpecular);
@@ -107,6 +106,7 @@ int main()
         cameraPosition = camera.getCameraPosition();
 
         lightingShader.use();
+        lightingShader.setVec3("light.position", lightPosition);
         lightingShader.setVec3("scene.viewPosition", cameraPosition);
 
         glfwPollEvents();
@@ -123,9 +123,8 @@ int main()
         lightingShader.use();
 
         model = glm::mat4(1.f);
-        model = glm::rotate(model, glm::radians(45.f), glm::vec3(1.f, 1.f, 1.f));
         lightingShader.setAllMat4(model, view, projection);
-        box.draw(lightingShader);
+        cyborg.draw(lightingShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
