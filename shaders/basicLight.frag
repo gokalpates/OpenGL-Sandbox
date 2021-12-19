@@ -4,7 +4,6 @@
 in VS_FS
 {
 	vec3 fragPosition;
-	vec3 normal;
 	vec2 textureCoords;
 	mat3 TBN;
 } fsIn;
@@ -32,7 +31,6 @@ struct Light
 struct Scene
 {
 	vec3 viewPosition;
-	bool normalMapEnabled;
 };
 
 //Initialise components.
@@ -46,17 +44,9 @@ void main()
 	vec3 diffuseSample = texture(material.diffuse0, fsIn.textureCoords).rgb;
 	vec3 specularSample = texture(material.specular0, fsIn.textureCoords).rgb;
 	
-	vec3 normal = vec3(0.f,0.f,0.f);
-	if(scene.normalMapEnabled)
-	{
-		normal = texture(material.normal0,fsIn.textureCoords).rgb; //Values are between [0,1] interval.
-		normal = (normal * 2.0) - 1.0;
-		normal = normalize(fsIn.TBN * normal);
-	}
-	else
-	{
-		normal = normalize(fsIn.normal);
-	}
+	vec3 normal = texture(material.normal0,fsIn.textureCoords).rgb; //Values are between [0,1] interval.
+	normal = (normal * 2.0) - 1.0;
+	normal = normalize(fsIn.TBN * normal);
 
 	//Ambient light.
 	vec3 ambient = diffuseSample * light.ambient;
