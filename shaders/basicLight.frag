@@ -126,6 +126,26 @@ void main()
 vec2 calculateParallaxMap(vec2 texCoords, vec3 tViewDirection)
 {
 	float heightScale = 0.1f;
-	float height =  texture(material.parallax0, texCoords).r;     
-    return texCoords - tViewDirection.xy * (height * heightScale);
+	
+	const float minLayer = 10.f;
+	const float maxLayer = 100.f;
+	float numberOfLayers = mix(maxLayer, minLayer, max(dot(fsIn.iTBN * fsIn.normal, tViewDirection), 0.0));
+	float layerDepth = 1.f / numberOfLayers;
+
+	float currentLayerDepth = 0.f;
+
+	vec2 shiftValue = tViewDirection.xy * heightScale;
+	shiftValue = shiftValue / numberOfLayers;
+
+	vec2 currentTexCoords = texCoords;
+	float currentDepthMapValue = texture(material.parallax0, currentTexCoords).r;
+
+	while(currentLayerDepth < currentDepthMapValue)
+	{
+		currentLayerDepth += layerDepth;
+		currentTexCoords -= shiftValue;
+		currentDepthMapValue = texture(material.parallax0, currentTexCoords).r;
+	}
+
+	return currentTexCoords;
 }

@@ -78,9 +78,15 @@ int main()
 
     //Textures.
     stbi_set_flip_vertically_on_load(true);
+    /*
     unsigned int diffuseTexture = loadTextureFromDisk("resources/textures/toy_box_diffuse.png");
     unsigned int normalTexture = loadTextureFromDisk("resources/textures/toy_box_normal.png");
     unsigned int depthTexture = loadTextureFromDisk("resources/textures/toy_box_disp.png");
+    */
+
+    unsigned int diffuseTexture = loadTextureFromDisk("resources/textures/bricks2.jpg");
+    unsigned int normalTexture = loadTextureFromDisk("resources/textures/bricks2_normal.jpg");
+    unsigned int depthTexture = loadTextureFromDisk("resources/textures/bricks2_disp.jpg");
 
     //Set light uniforms.
     lightingShader.use();
@@ -149,7 +155,6 @@ int main()
 
         lightingShader.use();
         model = glm::mat4(1.f);
-        model = glm::rotate(model, (float)(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
         lightingShader.setAllMat4(model, view, projection);
         plane.draw(lightingShader);
 
