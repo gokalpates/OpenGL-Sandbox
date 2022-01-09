@@ -53,10 +53,12 @@ int main()
     //OGL primitives.
     Camera camera(window);
     MSFramebufferObject MSFramebuffer(window);
+    Grid grid;
 
     //Shaders.
     Shader lightingShader("shaders/basicLight.vert", "shaders/basicLight.frag");
     Shader lightSourceShader("shaders/lightSource.vert", "shaders/lightSource.frag");
+    Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
 
     //Matrices and variables.
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
@@ -72,7 +74,13 @@ int main()
 
     //Resources.
     Model sphere("resources/objects/sphere/sphere.obj");
-    Model cyborg("resources/objects/cyborg/cyborg.obj");
+    Model plane("resources/objects/plane/plane.obj");
+
+    //Textures.
+    stbi_set_flip_vertically_on_load(true);
+    unsigned int diffuseTexture = loadTextureFromDisk("resources/textures/toy_box_diffuse.png");
+    unsigned int normalTexture = loadTextureFromDisk("resources/textures/toy_box_normal.png");
+    unsigned int depthTexture = loadTextureFromDisk("resources/textures/toy_box_disp.png");
 
     //Set light uniforms.
     lightingShader.use();
@@ -81,6 +89,12 @@ int main()
     lightingShader.setVec3("light.specular", lightSpecular);
     lightingShader.setVec3("light.position", lightPosition);
     lightingShader.setFloat("material.shininess", 4.f);
+    lightingShader.setBool("scene.normalMapEnabled", true);
+    lightingShader.setBool("scene.parallaxMapEnabled", true);
+
+    lightingShader.setInt("material.diffuse0", 0);
+    lightingShader.setInt("material.normal0", 2);
+    lightingShader.setInt("material.parallax0", 3);
 
     lightSourceShader.use();
     lightSourceShader.setVec3("light.color", lightSpecular);
@@ -110,21 +124,34 @@ int main()
         lightingShader.setVec3("scene.viewPosition", cameraPosition);
 
         glfwPollEvents();
-        if (glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window,GLFW_KEY_X))
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
         if (glfwGetKey(window,GLFW_KEY_E))
             lightingShader.setBool("scene.normalMapEnabled", true);
         if (glfwGetKey(window, GLFW_KEY_R))
             lightingShader.setBool("scene.normalMapEnabled", false);
+        if (glfwGetKey(window, GLFW_KEY_T))
+            lightingShader.setBool("scene.parallaxMapEnabled", true);
+        if (glfwGetKey(window, GLFW_KEY_Y))
+            lightingShader.setBool("scene.parallaxMapEnabled", false);
 
         MSFramebuffer.bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        lightingShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseTexture);
 
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, normalTexture);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+
+        lightingShader.use();
         model = glm::mat4(1.f);
+        model = glm::rotate(model, (float)(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
         lightingShader.setAllMat4(model, view, projection);
-        cyborg.draw(lightingShader);
+        plane.draw(lightingShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
@@ -132,6 +159,11 @@ int main()
         model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
         lightSourceShader.setAllMat4(model, view, projection);
         sphere.draw(lightSourceShader);
+
+        gridShader.use();
+        model = glm::mat4(1.f);
+        gridShader.setAllMat4(model, view, projection);
+        grid.draw(gridShader);
 
         MSFramebuffer.unbind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -143,6 +175,9 @@ int main()
         glfwSwapBuffers(window);
         counter++;
     }
+
+    glDeleteTextures(1, &diffuseTexture);
+    glDeleteTextures(1, &normalTexture);
 
     glfwDestroyWindow(window);
     glfwTerminate();
