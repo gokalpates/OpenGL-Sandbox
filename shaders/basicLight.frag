@@ -125,7 +125,7 @@ void main()
 
 vec2 calculateParallaxMap(vec2 texCoords, vec3 tViewDirection)
 {
-	float heightScale = 0.1f;
+	float heightScale = 0.05f;
 	
 	const float minLayer = 10.f;
 	const float maxLayer = 100.f;
@@ -147,5 +147,15 @@ vec2 calculateParallaxMap(vec2 texCoords, vec3 tViewDirection)
 		currentDepthMapValue = texture(material.parallax0, currentTexCoords).r;
 	}
 
-	return currentTexCoords;
+	vec2 prevTexCoords = currentTexCoords + shiftValue;
+
+    // get depth after and before collision for linear interpolation
+    float afterDepth  = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = texture(material.parallax0, prevTexCoords).r - currentLayerDepth + layerDepth;
+ 
+    // interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+    return finalTexCoords;
 }
