@@ -134,6 +134,8 @@ int main()
     Shader fboShader("shaders/fbo.vert", "shaders/fbo.frag");
     fboShader.use();
     fboShader.setInt("hdrColorBuffer", 0);
+    float exposure = 1.f;
+    fboShader.setFloat("exposure", exposure);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -155,6 +157,10 @@ int main()
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
+        if (glfwGetKey(window,GLFW_KEY_R))
+            exposure += 0.1f * deltaTime;
+        if (glfwGetKey(window,GLFW_KEY_E))
+            exposure -= 0.1f * deltaTime;
 
         camera.update();
         view = camera.getViewMatrix();
@@ -191,6 +197,8 @@ int main()
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         fboShader.use();
+        fboShader.setFloat("exposure", exposure);
+        std::cout << exposure << std::endl;
         glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
