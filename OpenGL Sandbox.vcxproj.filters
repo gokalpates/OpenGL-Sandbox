@@ -215,7 +215,9 @@
     <None Include="shaders\pointShadowMap.vert" />
     <None Include="shaders\pointShadowMap.geom" />
     <None Include="shaders\pointShadowMap.frag" />
-    <None Include="shaders\basicLight.vert" />
-    <None Include="shaders\basicLight.frag" />
+    <None Include="shaders\parallax.vert" />
+    <None Include="shaders\parallax.frag" />
+    <None Include="shaders\pointLight.vert" />
+    <None Include="shaders\pointLight.frag" />
   </ItemGroup>
 </Project>
