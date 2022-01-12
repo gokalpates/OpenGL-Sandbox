@@ -219,5 +219,6 @@
     <None Include="shaders\parallax.frag" />
     <None Include="shaders\pointLight.vert" />
     <None Include="shaders\pointLight.frag" />
+    <None Include="shaders\twoPassGaussBlur.frag" />
   </ItemGroup>
 </Project>

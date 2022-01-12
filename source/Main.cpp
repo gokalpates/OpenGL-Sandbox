@@ -28,7 +28,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", glfwGetPrimaryMonitor(), NULL);
+    GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "OpenGL Window", NULL, NULL);
     if (window == NULL)
     {
         printf("ERROR: GLFW could not create a window.\n");
@@ -57,12 +57,16 @@ int main()
     glm::vec3 viewPosition = camera.getCameraPosition();
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
 
-    glm::vec3 lightPosition = glm::vec3(0.f, 0.f, 9.f);
+    glm::vec3 lightPosition = glm::vec3(3.f, 5.f, 7.f);
     glm::vec3 lightColor = glm::vec3(1.f);
 
     Shader lightShader("shaders/pointLight.vert", "shaders/pointLight.frag");
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
     Shader lightSourceShader("shaders/lightSource.vert", "shaders/lightSource.frag");
+    Shader twoPassShader("shaders/fbo.vert", "shaders/twoPassGaussBlur.frag");
+
+    twoPassShader.use();
+    twoPassShader.setInt("pairsColorBuffer", 0); //Prepare texture unit 0.
 
     lightShader.use();
     lightShader.setVec3("lightPosition", lightPosition);
@@ -72,6 +76,7 @@ int main()
     
     Model box("resources/objects/box/box.obj");
     Model sphere("resources/objects/sphere/sphere.obj");
+    Model cyborg("resources/objects/cyborg/cyborg.obj");
 
     unsigned int hdrFBO;
     glGenFramebuffers(1, &hdrFBO);
@@ -84,6 +89,16 @@ int main()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGBA, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    unsigned int brightColorBuffer;
+    glGenTextures(1, &brightColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, brightColorBuffer);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGBA, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     unsigned int hdrDepthBuffer;
     glGenRenderbuffers(1, &hdrDepthBuffer);
@@ -91,9 +106,32 @@ int main()
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screenWidth, screenHeight);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, brightColorBuffer, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthBuffer);
+    {
+        GLenum attachments[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1 };
+        glDrawBuffers(2, attachments);
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //Creating ping pong framebuffers. Also refered as two pass framebuffers.
+    unsigned int pingPongFBO[2];
+    unsigned int pingPongColorBuffers[2];
+    glGenFramebuffers(2, pingPongFBO);
+    glGenTextures(2, pingPongColorBuffers);
+    glViewport(0, 0, screenWidth, screenHeight);
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingPongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, pingPongColorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, screenWidth, screenHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingPongColorBuffers[i], 0);
+    }
 
     std::vector<float> quadBuffer = {
         -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, //Top left
@@ -134,11 +172,15 @@ int main()
     Shader fboShader("shaders/fbo.vert", "shaders/fbo.frag");
     fboShader.use();
     fboShader.setInt("hdrColorBuffer", 0);
+    fboShader.setInt("blurColorBuffer", 1);
     float exposure = 1.f;
     fboShader.setFloat("exposure", exposure);
 
+    camera.setCameraPosition(glm::vec3(3.f,3.f,0.f));
+
     while (!glfwWindowShouldClose(window))
     {
+        unsigned int iterations = 4; //Higher iterations results as more bloom.
 
         currentFrame = glfwGetTime();
         currentTime = glfwGetTime();
@@ -169,6 +211,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+        glViewport(0, 0, screenWidth, screenHeight);
+
         //No need for viewport because default fbo and hdr fbo have same size.
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -176,32 +220,61 @@ int main()
         lightShader.setVec3("viewPosition", viewPosition);
         lightShader.setVec3("lightPosition", lightPosition);
 
+        //Floor.
         model = glm::mat4(1.f);
-        model = glm::scale(model, glm::vec3(1.f,1.f,10.f));
+        model = glm::scale(model, glm::vec3(100.f,0.1f,100.f));
         lightShader.setAllMat4(model, view, projection);
         box.draw(lightShader);
+
+        //Cyborg.
+        model = glm::mat4(1.f);
+        model = glm::translate(model, glm::vec3(0.f, 0.1f, 0.f));
+        lightShader.setAllMat4(model, view, projection);
+        cyborg.draw(lightShader);
 
         lightSourceShader.use();
         model = glm::mat4(1.f);
         model = glm::translate(model, lightPosition);
-        model = glm::scale(model, glm::vec3(0.08f));
         lightSourceShader.setAllMat4(model, view, projection);
-        sphere.draw(lightSourceShader);
+        box.draw(lightSourceShader);
 
-        /*
         gridShader.use();
         model = glm::mat4(1.f);
         gridShader.setAllMat4(model, view, projection);
         grid.draw(gridShader);
-        */
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, screenWidth, screenHeight);
+
+
+        //Two pass gauss blur.
+        bool horizontal = true;
+        twoPassShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        for (unsigned int i = 0; i < iterations; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingPongFBO[horizontal]);
+            glViewport(0, 0, screenWidth, screenHeight);
+
+            twoPassShader.setBool("horizontal", horizontal);
+            glBindTexture(GL_TEXTURE_2D, (i == 0 ? hdrColorBuffer : pingPongColorBuffers[!horizontal]));
+            horizontal = !horizontal;
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, screenWidth, screenHeight);
+
+
         fboShader.use();
         fboShader.setFloat("exposure", exposure);
         std::cout << exposure << std::endl;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, pingPongColorBuffers[!horizontal]);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------

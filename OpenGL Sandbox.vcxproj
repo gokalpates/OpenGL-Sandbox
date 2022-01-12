@@ -243,6 +243,7 @@
     <None Include="shaders\directionalShadowMap.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
+    <None Include="shaders\twoPassGaussBlur.frag" />
     <None Include="shaders\uboTest.frag" />
     <None Include="shaders\uboTest.vert" />
     <None Include="shaders\vegetable.frag" />
