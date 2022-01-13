@@ -207,6 +207,7 @@
     <None Include="shaders\debug.vert" />
     <None Include="shaders\debugFramebuffer.frag" />
     <None Include="shaders\debugFramebuffer.vert" />
+    <None Include="shaders\fboKernelBlur.frag" />
     <None Include="shaders\parallax.frag" />
     <None Include="shaders\parallax.vert" />
     <None Include="shaders\fbo.frag" />
@@ -230,8 +231,8 @@
     <None Include="shaders\modelLoadingLighting.vert" />
     <None Include="shaders\objectOutlining.frag" />
     <None Include="shaders\objectOutlining.vert" />
-    <None Include="shaders\pointLight.frag" />
-    <None Include="shaders\pointLight.vert" />
+    <None Include="shaders\main.frag" />
+    <None Include="shaders\main.vert" />
     <None Include="shaders\pointShadowMap.frag" />
     <None Include="shaders\pointShadowMap.geom" />
     <None Include="shaders\pointShadowMap.vert" />

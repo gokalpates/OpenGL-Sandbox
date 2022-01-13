@@ -20,7 +20,10 @@ uniform mat4 projection;
 void main()
 {
 	vsOut.fragPosition = vec3(model * vec4(position,1.0));
-	vsOut.normal = normal;
+
+	mat3 normalMatrix = transpose(inverse(mat3(model)));
+	vsOut.normal = normalize(normalMatrix * normal);
+
 	vsOut.texCoord = texCoord;
 	gl_Position = projection * view * vec4(vsOut.fragPosition, 1.0);;
 }
