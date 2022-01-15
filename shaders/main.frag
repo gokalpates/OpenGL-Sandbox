@@ -1,26 +1,13 @@
 #version 330 core
 
-//Multiple Render Target.
-layout (location = 0) out vec4 fragmentColor;
-layout (location = 1) out vec4 brightColor;
+out vec4 fragmentColor;
 
 in VS_FS
 {
-	vec3 fragPosition;
-	vec3 normal;
 	vec2 texCoord;
 }fsIn;
 
 uniform vec3 viewPosition;
-
-struct Material
-{
-	sampler2D diffuse0;
-	sampler2D specular0;
-	float shininess;
-};
-
-uniform Material material;
 
 struct PointLight
 {
@@ -30,10 +17,16 @@ struct PointLight
 
 uniform PointLight pointLights[5];
 
+uniform sampler2D position;
+uniform sampler2D normal;
+uniform sampler2D albedo;
+
 void main()
 {
-	vec3 diffuseSample = texture(material.diffuse0, fsIn.texCoord).rgb;
-	float specularSample = texture(material.specular0, fsIn.texCoord).r;
+	vec3 fragPosition = texture(position,fsIn.texCoord).rgb;
+	vec3 normal = texture(normal,fsIn.texCoord).rgb;
+	vec3 diffuseSample = texture(albedo,fsIn.texCoord).rgb;
+	float specularSample = texture(albedo,fsIn.texCoord).a;
 
 	vec3 result = vec3(0.f);
 
@@ -42,33 +35,27 @@ void main()
 	result += ambient;
 
 	//Calculate diffuse and specular light.
-	vec3 viewDirection = normalize(viewPosition - fsIn.fragPosition);
+	vec3 viewDirection = normalize(viewPosition - fragPosition);
 	for(int i = 0; i < 5; i++)
 	{
-		vec3 lightDirection = normalize(pointLights[i].position - fsIn.fragPosition);
-		float diffuseAngle = max(dot(lightDirection,fsIn.normal),0.0);
+		vec3 lightDirection = normalize(pointLights[i].position - fragPosition);
+		float diffuseAngle = max(dot(lightDirection, normal),0.0);
 		vec3 diffuse = pointLights[i].color * diffuseAngle * diffuseSample;
 
-		vec3 reflectDirection = reflect(-lightDirection,fsIn.normal);
 		vec3 halfwayDirection = normalize(lightDirection + viewDirection);
-		float specularAngle =  pow(max(dot(fsIn.normal, halfwayDirection), 0.0), material.shininess * 4.f);
+		float specularAngle =  pow(max(dot(normal, halfwayDirection), 0.0), 16.f);
 		vec3 specular = pointLights[i].color * specularAngle * specularSample;
 
 		vec3 resultPerLight = diffuse + specular;
 
 		//Attenuation effect.
-		float distance = length(fsIn.fragPosition - pointLights[i].position);
+		float distance = length(fragPosition - pointLights[i].position);
 		float attenuation = 1.f / (distance * distance);
 		resultPerLight *= attenuation;
 
 		result += resultPerLight;
 	}
 	
+	result = pow(result,vec3(1.f/2.2f));
 	fragmentColor = vec4(result, 1.f);
-	
-	float brightness = dot(fragmentColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-	if(brightness > 1.0)
-		brightColor = vec4(fragmentColor.rgb, 1.0);
-	else
-		brightColor = vec4(vec3(0.f),1.f);
 }

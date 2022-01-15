@@ -221,5 +221,7 @@
     <None Include="shaders\main.frag" />
     <None Include="shaders\twoPassGaussBlur.frag" />
     <None Include="shaders\fboKernelBlur.frag" />
+    <None Include="shaders\geometryPass.vert" />
+    <None Include="shaders\lightingPass.frag" />
   </ItemGroup>
 </Project>
