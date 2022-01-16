@@ -43,16 +43,17 @@ void main()
 		vec3 diffuse = pointLights[i].color * diffuseAngle * diffuseSample;
 
 		vec3 halfwayDirection = normalize(lightDirection + viewDirection);
-		float specularAngle =  pow(max(dot(normal, halfwayDirection), 0.0), 16.f);
+		float specularAngle =  pow(max(dot(normal, halfwayDirection), 0.0), 32.f);
 		vec3 specular = pointLights[i].color * specularAngle * specularSample;
-
-		vec3 resultPerLight = diffuse + specular;
 
 		//Attenuation effect.
 		float distance = length(fragPosition - pointLights[i].position);
 		float attenuation = 1.f / (distance * distance);
-		resultPerLight *= attenuation;
 
+		diffuse *= attenuation;
+		specular *= attenuation;
+
+		vec3 resultPerLight = diffuse + specular;
 		result += resultPerLight;
 	}
 	

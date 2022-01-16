@@ -168,6 +168,7 @@
     <ClCompile Include="source\Callback.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\external\stb_image.cpp" />
+    <ClCompile Include="source\Utilities.cpp" />
     <ClCompile Include="source\VertexArrayObject.cpp" />
     <ClCompile Include="source\VertexBufferObject.cpp" />
     <ClCompile Include="source\SpotLight.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="include\Model.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\Texture.h" />
+    <ClInclude Include="include\Utilities.h" />
     <ClInclude Include="include\Vertex.h" />
     <ClInclude Include="include\VertexArrayObject.h" />
     <ClInclude Include="include\VertexBufferObject.h" />
@@ -199,6 +201,12 @@
     <Image Include="resources\wall.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\ao.frag" />
+    <None Include="shaders\ao.vert" />
+    <None Include="shaders\aoBlur.frag" />
+    <None Include="shaders\aoGeometry.frag" />
+    <None Include="shaders\aoGeometry.vert" />
+    <None Include="shaders\aoLightPass.frag" />
     <None Include="shaders\axis.frag" />
     <None Include="shaders\axis.vert" />
     <None Include="shaders\blending.frag" />

@@ -24,6 +24,6 @@ void main()
 {
 	gPosition = fsIn.fragPos;
 	gNormal = fsIn.normal;
-	gAlbedo.rgb = texture(material.diffuse0,fsIn.texCoords).rgb;
-	gAlbedo.a = texture(material.specular0,fsIn.texCoords).r;
+	gAlbedo.rgb = texture(material.diffuse0, fsIn.texCoords).rgb;
+	gAlbedo.a = texture(material.specular0, fsIn.texCoords).g;
 }

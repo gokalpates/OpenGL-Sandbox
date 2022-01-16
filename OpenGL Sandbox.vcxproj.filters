@@ -99,6 +99,9 @@
     <ClCompile Include="source\DirectionalShadowMap.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="source\Utilities.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Callback.h">
@@ -159,6 +162,9 @@
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
     <ClInclude Include="include\DirectionalShadowMap.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Utilities.h">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
   </ItemGroup>
@@ -223,5 +229,11 @@
     <None Include="shaders\fboKernelBlur.frag" />
     <None Include="shaders\geometryPass.vert" />
     <None Include="shaders\lightingPass.frag" />
+    <None Include="shaders\aoGeometry.vert" />
+    <None Include="shaders\aoGeometry.frag" />
+    <None Include="shaders\ao.vert" />
+    <None Include="shaders\ao.frag" />
+    <None Include="shaders\aoBlur.frag" />
+    <None Include="shaders\aoLightPass.frag" />
   </ItemGroup>
 </Project>
