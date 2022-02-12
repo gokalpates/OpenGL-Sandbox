@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\BoneInspector.cpp" />
     <ClCompile Include="source\DirectionalShadowMap.cpp" />
     <ClCompile Include="source\MSFramebufferObject.cpp" />
     <ClCompile Include="source\Skybox.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="source\SpotLight.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\BoneInspector.h" />
     <ClInclude Include="include\DirectionalShadowMap.h" />
     <ClInclude Include="include\FramebufferObject.h" />
     <ClInclude Include="include\DirectionalLight.h" />
