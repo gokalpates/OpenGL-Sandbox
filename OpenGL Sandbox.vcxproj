@@ -173,6 +173,7 @@
     <ClCompile Include="source\VertexArrayObject.cpp" />
     <ClCompile Include="source\VertexBufferObject.cpp" />
     <ClCompile Include="source\SpotLight.cpp" />
+    <ClCompile Include="source\VertexBone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\BoneInspector.h" />
@@ -197,6 +198,7 @@
     <ClInclude Include="include\SpotLight.h" />
     <ClInclude Include="include\Skybox.h" />
     <ClInclude Include="include\MSFramebufferObject.h" />
+    <ClInclude Include="include\VertexBone.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\texture.jpg" />

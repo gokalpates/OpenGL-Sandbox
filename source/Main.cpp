@@ -12,6 +12,7 @@
 #include "Grid.h"
 #include "Debug.h"
 #include "Utilities.h"
+#include "BoneInspector.h"
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
@@ -62,6 +63,10 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
+    inspectModel("resources/objects/boblamp/boblampclean.md5mesh");
+    std::cout << "***************************\n";
+    printMappedData();
+
     while (!glfwWindowShouldClose(window))
     {
         currentFrame = glfwGetTime();
@@ -98,6 +103,8 @@ int main()
         glfwSwapBuffers(window);
         counter++;
     }
+
+    releaseResources();
 
     glfwDestroyWindow(window);
     glfwTerminate();
