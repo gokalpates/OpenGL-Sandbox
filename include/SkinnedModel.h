@@ -24,6 +24,7 @@ public:
 	~SkinnedModel();
 
 	bool loadSkinnedModel(std::string path);
+	void draw(Shader& shader);
 
 private:
 	enum BUFFER_TYPE
@@ -77,6 +78,7 @@ private:
 		uint32_t m_NumOfIndex = 0u;
 		uint32_t m_NumOfVertex = 0u;
 		uint32_t m_BaseVertex = 0u;
+		uint32_t m_BaseIndex = 0u;
 	};
 
 	struct ModelInfo

@@ -36,6 +36,41 @@ bool SkinnedModel::loadSkinnedModel(std::string filePath)
 	return isSuccess;
 }
 
+void SkinnedModel::draw(Shader& shader)
+{
+	glBindVertexArray(m_VAO);
+
+	for (size_t i = 0; i < m_MeshInfos.size(); i++)
+	{
+		uint32_t diffuseCount = 0u;
+		uint32_t specularCount = 0u;
+
+		MeshMaterial& material = m_Materials.at(i);
+		for (size_t j = 0; j < material.m_Textures.size(); j++)
+		{
+			glActiveTexture(GL_TEXTURE0 + j);
+
+			std::string index;
+			std::string name = material.m_Textures.at(j).m_TextureType;
+			if (name == "diffuse")
+			{
+				index = std::to_string(diffuseCount);
+				diffuseCount++;
+			}
+			else if (name == "specular")
+			{
+				index = std::to_string(specularCount);
+				specularCount++;
+			}
+
+			glUniform1i(glGetUniformLocation(shader.m_shaderId, ("material." + name + index).c_str()), j);
+			glBindTexture(GL_TEXTURE_2D, material.m_Textures.at(j).m_TextureId);
+		}
+
+		glDrawElementsBaseVertex(GL_TRIANGLES, m_MeshInfos[i].m_NumOfIndex, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * m_MeshInfos[i].m_BaseIndex), m_MeshInfos[i].m_BaseVertex);
+	}
+}
+
 void SkinnedModel::loadToVideoMemory()
 {
 	glGenVertexArrays(1, &m_VAO);
@@ -118,6 +153,7 @@ void SkinnedModel::extractInfo(const aiScene* scene)
 		tempMeshInfo.m_MeshId = i;
 		tempMeshInfo.m_MeshName = mesh->mName.C_Str();
 		tempMeshInfo.m_BaseVertex = totalVertexCount;
+		tempMeshInfo.m_BaseIndex = totalIndexCount;
 		tempMeshInfo.m_NumOfVertex = mesh->mNumVertices;
 		tempMeshInfo.m_NumOfIndex = mesh->mNumFaces * 3;
 
