@@ -13,6 +13,7 @@
 #include "Debug.h"
 #include "Utilities.h"
 #include "BoneInspector.h"
+#include "SkinnedModel.h"
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
@@ -63,9 +64,8 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
-    inspectModel("resources/objects/boblamp/boblampclean.md5mesh");
-    std::cout << "***************************\n";
-    printMappedData();
+    SkinnedModel test;
+    test.loadModel("resources/objects/boblamp/boblampclean.md5mesh");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -103,8 +103,6 @@ int main()
         glfwSwapBuffers(window);
         counter++;
     }
-
-    releaseResources();
 
     glfwDestroyWindow(window);
     glfwTerminate();

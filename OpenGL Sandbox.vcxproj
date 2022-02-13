@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\SkinnedModel.cpp" />
     <ClCompile Include="source\BoneInspector.cpp" />
     <ClCompile Include="source\DirectionalShadowMap.cpp" />
     <ClCompile Include="source\MSFramebufferObject.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="include\Skybox.h" />
     <ClInclude Include="include\MSFramebufferObject.h" />
     <ClInclude Include="include\VertexBone.h" />
+    <ClInclude Include="include\SkinnedModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\texture.jpg" />
