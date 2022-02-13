@@ -11,6 +11,8 @@
 #include <assimp/scene.h>     
 #include <assimp/postprocess.h>
 
+#include <stb_image.h>
+
 #include "Shader.h"
 
 #define ASSIMP_LOAD_FLAGS aiProcess_Triangulate | aiProcess_FlipUVs
@@ -21,24 +23,9 @@ public:
 	SkinnedModel();
 	~SkinnedModel();
 
-	bool loadModel(std::string path);
+	bool loadSkinnedModel(std::string path);
 
 private:
-	void loadToVideoMemory();
-	void clear();
-	void clearFromMainMemory();
-	void clearFromVideoMemory();
-
-	void extractInfo(const aiScene* scene);
-
-	void processScene(const aiScene* scene);
-	void processMeshes(const aiScene* scene);
-	void processSingleMesh(const uint32_t meshId, const aiMesh* mesh);
-	void processMeshBones(const uint32_t meshId, const aiMesh* mesh);
-	void processSingleBone(const uint32_t meshId, const aiBone* bone);
-
-	uint32_t getBoneId(const aiBone* bone);
-
 	enum BUFFER_TYPE
 	{
 		INDEX_BUFFER = 0,
@@ -97,9 +84,25 @@ private:
 		uint32_t m_MeshCount = 0u;
 		uint32_t m_TotalNumOfVertex = 0u;
 		uint32_t m_TotalNumOfIndex = 0u;
+		std::string m_DirPath = "";
+	};
+	
+	ModelInfo info;
+
+	struct Texture
+	{
+		uint32_t m_TextureId;
+		std::string m_TextureType;
+		std::string m_TexturePath;
 	};
 
-	ModelInfo info;
+	struct MeshMaterial
+	{
+		std::vector<Texture> m_Textures;
+	};
+
+	std::vector<MeshMaterial> m_Materials;
+	std::vector<Texture> m_LoadedTextures;
 
 	GLuint m_VAO;
 	GLuint m_Buffers[NUM_BUFFERS];
@@ -112,5 +115,31 @@ private:
 
 	std::map<std::string, uint32_t> m_BoneMap;
 	std::vector<MeshInfo> m_MeshInfos;
+
+	void loadToVideoMemory();
+	void clear();
+	void clearFromMainMemory();
+	void clearFromVideoMemory();
+
+	void extractInfo(const aiScene* scene);
+	std::string calculateDirPath(std::string path);
+
+	void processScene(const aiScene* scene);
+	void processMeshes(const aiScene* scene);
+	void processSingleMesh(const uint32_t meshId, const aiMesh* mesh);
+	void processMeshBones(const uint32_t meshId, const aiMesh* mesh);
+	void processSingleBone(const uint32_t meshId, const aiBone* bone);
+
+	void processMeshMaterial(const aiMaterial* material);
+	std::vector<Texture> processTextureType(const aiMaterial* material, aiTextureType type, std::string typeName);
+	
+	/*
+		ATTENTION: Do not pass fileName parameter with full path of texture. Path is already supplied with loadSkinnedModel function.
+		Function itself evaluates a value based on "path + fileName" and then imports texture based on this value.
+		Also, it is users responsibility to ensure all texture images are refered from models mesh data directory.
+	*/
+	uint32_t loadTextureFromDisk(std::string texturePath);
+
+	uint32_t getBoneId(const aiBone* bone);
 };
 

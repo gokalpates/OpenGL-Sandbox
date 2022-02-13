@@ -65,7 +65,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     SkinnedModel test;
-    test.loadModel("resources/objects/boblamp/boblampclean.md5mesh");
+    test.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
 
     while (!glfwWindowShouldClose(window))
     {

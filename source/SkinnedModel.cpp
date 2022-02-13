@@ -9,14 +9,15 @@ SkinnedModel::~SkinnedModel()
 	clear();
 }
 
-bool SkinnedModel::loadModel(std::string path)
+bool SkinnedModel::loadSkinnedModel(std::string filePath)
 {
 	clear();
 
+	info.m_DirPath = calculateDirPath(filePath);
 	bool isSuccess = true;
 
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
+	const aiScene* scene = importer.ReadFile(filePath, ASSIMP_LOAD_FLAGS);
 
 	if (scene)
 	{
@@ -132,6 +133,11 @@ void SkinnedModel::extractInfo(const aiScene* scene)
 	m_BonesPerVertex.resize(totalVertexCount);
 }
 
+std::string SkinnedModel::calculateDirPath(std::string path)
+{
+	return path.substr(0, path.find_last_of('/'));
+}
+
 void SkinnedModel::processScene(const aiScene* scene)
 {
 	//Process meshes, camera, lights, etc.
@@ -146,7 +152,7 @@ void SkinnedModel::processMeshes(const aiScene* scene)
 		processSingleMesh(i, mesh);
 
 		const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		
+		processMeshMaterial(material);
 	}
 }
 
@@ -224,6 +230,97 @@ void SkinnedModel::processSingleBone(const uint32_t meshId, const aiBone* bone)
 		uint32_t globalVertexId = m_MeshInfos[meshId].m_BaseVertex + vw.mVertexId;
 		m_BonesPerVertex.at(i).addBoneData(boneID, vw.mWeight);
 	}
+}
+
+void SkinnedModel::processMeshMaterial(const aiMaterial* material)
+{
+	MeshMaterial tempMeshMaterial;
+	
+	std::vector<Texture> diffuseTextures = processTextureType(material, aiTextureType_DIFFUSE, "diffuse");
+	tempMeshMaterial.m_Textures.insert(tempMeshMaterial.m_Textures.end(), diffuseTextures.begin(), diffuseTextures.end());
+
+	std::vector<Texture> specularTextures = processTextureType(material, aiTextureType_SPECULAR, "specular");
+	tempMeshMaterial.m_Textures.insert(tempMeshMaterial.m_Textures.end(), specularTextures.begin(), specularTextures.end());
+
+	m_Materials.push_back(tempMeshMaterial);
+}
+
+std::vector<SkinnedModel::Texture> SkinnedModel::processTextureType(const aiMaterial* material, aiTextureType type, std::string typeName)
+{
+	std::vector<Texture> textures;
+	Texture tempTexture;
+
+	for (size_t i = 0; i < material->GetTextureCount(type); i++)
+	{
+		aiString textureName;
+		material->GetTexture(type, i, &textureName);
+
+		//Check for textures if they already allocates space in vram.
+
+		bool isAlreadyLoaded = false;
+		for (size_t j = 0; j < m_LoadedTextures.size(); j++)
+		{
+			std::string tempString = textureName.C_Str();
+			if (m_LoadedTextures.at(j).m_TexturePath == (info.m_DirPath + "/" + tempString))
+			{
+				isAlreadyLoaded = true;
+				textures.push_back(m_LoadedTextures[j]);
+				break;
+			}
+		}
+
+		if (!isAlreadyLoaded)
+		{
+			tempTexture.m_TexturePath = info.m_DirPath + "/" + std::string(textureName.C_Str());
+			tempTexture.m_TextureType = typeName;
+			tempTexture.m_TextureId = loadTextureFromDisk(tempTexture.m_TexturePath);
+			textures.push_back(tempTexture);
+
+			m_LoadedTextures.push_back(tempTexture);
+		}
+	}
+
+	return textures;
+}
+
+uint32_t SkinnedModel::loadTextureFromDisk(std::string path)
+{
+	uint32_t textureId = 0u;
+	glGenTextures(1, &textureId);
+
+	int width, height, numberOfChannels;
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &numberOfChannels, 0);
+	if (data)
+	{
+		GLenum textureformat = GL_INVALID_ENUM;
+		if (numberOfChannels == 1)
+			textureformat = GL_RED;
+		else if (numberOfChannels == 3)
+			textureformat = GL_RGB;
+		else if (numberOfChannels == 4)
+			textureformat = GL_RGBA;
+		else
+			std::cout << "ERROR: Invalid texture format. \n";
+
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, textureformat, width, height, 0, textureformat, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "ERROR: Texture could not load from: " << path << "\n";
+		stbi_image_free(data);
+	}
+
+	return textureId;
 }
 
 uint32_t SkinnedModel::getBoneId(const aiBone* bone)
