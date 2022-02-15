@@ -253,5 +253,7 @@
     <None Include="shaders\ao.frag" />
     <None Include="shaders\aoBlur.frag" />
     <None Include="shaders\aoLightPass.frag" />
+    <None Include="shaders\skeletalHeatMap.vert" />
+    <None Include="shaders\skeletalHeatMap.frag" />
   </ItemGroup>
 </Project>

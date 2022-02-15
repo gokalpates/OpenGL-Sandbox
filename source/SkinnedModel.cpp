@@ -68,6 +68,7 @@ void SkinnedModel::draw(Shader& shader)
 		}
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, m_MeshInfos[i].m_NumOfIndex, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * m_MeshInfos[i].m_BaseIndex), m_MeshInfos[i].m_BaseVertex);
+		//glDrawElements(GL_TRIANGLES, m_MeshInfos.at(i).m_NumOfIndex, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * m_MeshInfos.at(i).m_BaseIndex));
 	}
 }
 
@@ -225,7 +226,7 @@ void SkinnedModel::processSingleMesh(const uint32_t meshId, const aiMesh* mesh)
 		{
 			const aiVector3D textureCoords = mesh->mTextureCoords[0][i];
 			temp2D.x = textureCoords.x;
-			temp2D.y = textureCoords.z;
+			temp2D.y = textureCoords.y;
 			m_TexCoords.push_back(temp2D);
 		}
 		else

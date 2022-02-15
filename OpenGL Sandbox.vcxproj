@@ -258,6 +258,8 @@
     <None Include="shaders\refraction.vert" />
     <None Include="shaders\directionalShadowMap.frag" />
     <None Include="shaders\directionalShadowMap.vert" />
+    <None Include="shaders\skeletalHeatMap.frag" />
+    <None Include="shaders\skeletalHeatMap.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\twoPassGaussBlur.frag" />
