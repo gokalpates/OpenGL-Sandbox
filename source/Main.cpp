@@ -65,10 +65,11 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     Shader heat("shaders/skeletalHeatMap.vert", "shaders/skeletalHeatMap.frag");
-    SkinnedModel test;
-    test.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
-
-    inspectModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
+    SkinnedModel skinnedModel;
+    skinnedModel.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
+    
+    uint32_t spacebarCount = 0u;
+    double timer = 0;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -94,13 +95,22 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
 
+        if (glfwGetKey(window, GLFW_KEY_SPACE) && (timer > 1))
+        {
+            timer = 0;
+            spacebarCount++;
+            heat.use();
+            heat.setInt("displayBoneIndex", spacebarCount % skinnedModel.getUniqueBoneCount());
+        }
+        timer += deltaTime;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         heat.use();
         model = glm::mat4(1.f);
         model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
         heat.setAllMat4(model, view, projection);
-        test.draw(heat);
+        skinnedModel.draw(heat);
 
         gridShader.use();
         model = glm::mat4(1.f);

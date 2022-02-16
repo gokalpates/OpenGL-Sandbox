@@ -1,6 +1,8 @@
 #include "SkinnedModel.h"
 
-SkinnedModel::SkinnedModel()
+SkinnedModel::SkinnedModel() :
+	m_VAO(0u),
+	m_Buffers {0}
 {
 }
 
@@ -70,6 +72,11 @@ void SkinnedModel::draw(Shader& shader)
 		glDrawElementsBaseVertex(GL_TRIANGLES, m_MeshInfos[i].m_NumOfIndex, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * m_MeshInfos[i].m_BaseIndex), m_MeshInfos[i].m_BaseVertex);
 		//glDrawElements(GL_TRIANGLES, m_MeshInfos.at(i).m_NumOfIndex, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * m_MeshInfos.at(i).m_BaseIndex));
 	}
+}
+
+uint32_t SkinnedModel::getUniqueBoneCount() const
+{
+	return m_BoneMap.size();
 }
 
 void SkinnedModel::loadToVideoMemory()
@@ -265,7 +272,7 @@ void SkinnedModel::processSingleBone(const uint32_t meshId, const aiBone* bone)
 	{
 		const aiVertexWeight& vw = bone->mWeights[i];
 		uint32_t globalVertexId = m_MeshInfos[meshId].m_BaseVertex + vw.mVertexId;
-		m_BonesPerVertex.at(i).addBoneData(boneID, vw.mWeight);
+		m_BonesPerVertex.at(globalVertexId).addBoneData(boneID, vw.mWeight);
 	}
 }
 

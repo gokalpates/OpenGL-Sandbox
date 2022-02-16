@@ -18,10 +18,34 @@ struct Material
 };
 
 uniform Material material;
+uniform int displayBoneIndex = 0;
 
 void main()
 {
-	vec3 diffuse = texture(material.diffuse0,fsIn.texCoords).rgb;
-	diffuse = pow(diffuse,vec3(1.f/2.2f));
-	fragColor = vec4(diffuse,1.f);
+	bool found = false;
+	for(int i = 0; i < 4; i++)
+	{
+		if(fsIn.boneIds[i] == displayBoneIndex)
+		{
+			if(fsIn.weights[i] >= 0.7f)
+			{
+				fragColor = vec4(1.f,0.f,0.f,0.f) * fsIn.weights[i];
+			}
+			else if(fsIn.weights[i] >= 0.4f && fsIn.weights[i] <= 0.6f)
+			{
+				fragColor = vec4(0.f,1.f,0.f,0.f) * fsIn.weights[i];
+				
+			}
+			else if(fsIn.weights[i] >= 0.1f)
+			{
+				fragColor = vec4(1.f,1.f,0.f,0.f) * fsIn.weights[i];
+			}
+			found = true;
+			break;
+		}
+	}
+	if(!found)
+	{
+		fragColor = vec4(0.f,0.f,1.f,0.f);
+	}
 }

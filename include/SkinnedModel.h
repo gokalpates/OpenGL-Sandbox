@@ -25,6 +25,7 @@ public:
 
 	bool loadSkinnedModel(std::string path);
 	void draw(Shader& shader);
+	uint32_t getUniqueBoneCount() const;
 
 private:
 	enum BUFFER_TYPE
