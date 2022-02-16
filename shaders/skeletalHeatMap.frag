@@ -29,16 +29,16 @@ void main()
 		{
 			if(fsIn.weights[i] >= 0.7f)
 			{
-				fragColor = vec4(1.f,0.f,0.f,0.f) * fsIn.weights[i];
+				fragColor = vec4(1.f,0.f,0.f,0.f);
 			}
 			else if(fsIn.weights[i] >= 0.4f && fsIn.weights[i] <= 0.6f)
 			{
-				fragColor = vec4(0.f,1.f,0.f,0.f) * fsIn.weights[i];
+				fragColor = vec4(0.f,1.f,0.f,0.f);
 				
 			}
-			else if(fsIn.weights[i] >= 0.1f)
+			else if(fsIn.weights[i] >= 0.f)
 			{
-				fragColor = vec4(1.f,1.f,0.f,0.f) * fsIn.weights[i];
+				fragColor = vec4(1.f,1.f,0.f,0.f);
 			}
 			found = true;
 			break;
