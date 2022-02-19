@@ -64,6 +64,8 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
+    inspectModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
+
     Shader heat("shaders/skeletalHeatMap.vert", "shaders/skeletalHeatMap.frag");
     SkinnedModel skinnedModel;
     skinnedModel.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");

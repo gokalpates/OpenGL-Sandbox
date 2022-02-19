@@ -24,6 +24,7 @@ void inspectModel(std::string model)
 void parseScene(const aiScene* scene)
 {
 	parseMeshes(scene);
+	parseHierarchy(scene);
 }
 
 void parseMeshes(const aiScene* scene)
@@ -85,6 +86,30 @@ void singleBone(uint32_t meshId, const aiBone* bone)
 	}
 }
 
+void parseHierarchy(const aiScene* scene)
+{
+	printf("PARSING HIERARCHY\n");
+	parseSingleNode(scene->mRootNode);
+}
+
+void parseSingleNode(const aiNode* node)
+{
+	static uint32_t spaceCount = 0u;
+	spaceCount += 4;
+
+	printSpace(spaceCount); printf("Node name: %s Num of children: %d Num of meshes: %d\n", node->mName.C_Str(), node->mNumChildren, node->mNumMeshes);
+	printSpace(spaceCount); printf("Transformation matrix:\n");
+	printMat4(node->mTransformation, spaceCount);
+	printf("\n\n");
+
+	for (size_t i = 0; i < node->mNumChildren; i++)
+	{
+		parseSingleNode(node->mChildren[i]);
+	}
+
+	spaceCount -= 4;
+}
+
 //Maps bone and returns its id.
 uint32_t getBoneId(const aiBone* bone)
 {
@@ -118,6 +143,22 @@ void printMappedData()
 
 			std::cout << "Vertex(" << i << ") has affected by bone(" << boneId << ") with weight(" << boneWeight << ").\n";
 		}
+	}
+}
+
+void printMat4(const aiMatrix4x4 m, uint32_t spaceCount = 0)
+{
+	printSpace(spaceCount); printf("%f %f %f %f\n", m.a1, m.a2, m.a3, m.a4);
+	printSpace(spaceCount); printf("%f %f %f %f\n", m.b1, m.b2, m.b3, m.b4);
+	printSpace(spaceCount); printf("%f %f %f %f\n", m.c1, m.c2, m.c3, m.c4);
+	printSpace(spaceCount); printf("%f %f %f %f\n", m.d1, m.d2, m.d3, m.d4);
+}
+
+void printSpace(uint32_t spaceCount)
+{
+	for (size_t i = 0; i < spaceCount; i++)
+	{
+		std::cout << " ";
 	}
 }
 
