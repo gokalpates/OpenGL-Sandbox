@@ -4,7 +4,6 @@ in VS_FS
 {
 	vec2 texCoords;
 	vec3 normal;
-	vec3 localePosition;
 	flat ivec4 boneIds;
 	vec4 weights;
 }fsIn;
@@ -18,34 +17,8 @@ struct Material
 };
 
 uniform Material material;
-uniform int displayBoneIndex = 0;
 
 void main()
 {
-	bool found = false;
-	for(int i = 0; i < 4; i++)
-	{
-		if(fsIn.boneIds[i] == displayBoneIndex)
-		{
-			if(fsIn.weights[i] >= 0.7f)
-			{
-				fragColor = vec4(1.f,0.f,0.f,0.f);
-			}
-			else if(fsIn.weights[i] >= 0.4f && fsIn.weights[i] <= 0.6f)
-			{
-				fragColor = vec4(0.f,1.f,0.f,0.f);
-				
-			}
-			else if(fsIn.weights[i] >= 0.f)
-			{
-				fragColor = vec4(1.f,1.f,0.f,0.f);
-			}
-			found = true;
-			break;
-		}
-	}
-	if(!found)
-	{
-		fragColor = vec4(0.f,0.f,1.f,0.f);
-	}
+	fragColor = texture(material.diffuse0, fsIn.texCoords);
 }

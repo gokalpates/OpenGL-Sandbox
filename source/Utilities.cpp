@@ -113,4 +113,33 @@ namespace utils
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glBindVertexArray(0);
     }
+
+    glm::mat4 assimpToGlm(const aiMatrix4x4 m)
+    {
+        glm::mat4 returnMatrix = glm::mat4(0.f);
+        float elementArray[16] = { 0.f };
+
+        elementArray[0] = m.a1;
+        elementArray[1] = m.a2;
+        elementArray[2] = m.a3;
+        elementArray[3] = m.a4;
+
+        elementArray[4] = m.b1;
+        elementArray[5] = m.b2;
+        elementArray[6] = m.b3;
+        elementArray[7] = m.b4;
+
+        elementArray[8] = m.c1;
+        elementArray[9] = m.c2;
+        elementArray[10] = m.c3;
+        elementArray[11] = m.c4;
+
+        elementArray[12] = m.d1;
+        elementArray[13] = m.d2;
+        elementArray[14] = m.d3;
+        elementArray[15] = m.d4;
+
+        returnMatrix = glm::make_mat4(elementArray);
+        return returnMatrix;
+    }
 }

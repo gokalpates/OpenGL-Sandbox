@@ -14,6 +14,7 @@
 #include <stb_image.h>
 
 #include "Shader.h"
+#include "Utilities.h"
 
 #define ASSIMP_LOAD_FLAGS aiProcess_Triangulate | aiProcess_FlipUVs
 
@@ -26,8 +27,13 @@ public:
 	bool loadSkinnedModel(std::string path);
 	void draw(Shader& shader);
 	uint32_t getUniqueBoneCount() const;
+	void getBoneTransforms(std::vector<glm::mat4>& transforms);
 
 private:
+
+	Assimp::Importer m_Importer;
+	const aiScene* m_Scene;
+
 	enum BUFFER_TYPE
 	{
 		INDEX_BUFFER = 0,
@@ -107,6 +113,20 @@ private:
 	std::vector<MeshMaterial> m_Materials;
 	std::vector<Texture> m_LoadedTextures;
 
+	struct BoneInfo
+	{
+		glm::mat4 offsetMatrix;
+		glm::mat4 finalTransform;
+
+		BoneInfo(const glm::mat4 offset)
+		{
+			offsetMatrix = offset;
+			finalTransform = glm::mat4(0.f);
+		}
+	};
+
+	std::vector<BoneInfo> m_BoneInfos;
+
 	GLuint m_VAO;
 	GLuint m_Buffers[NUM_BUFFERS];
 
@@ -135,7 +155,8 @@ private:
 
 	void processMeshMaterial(const aiMaterial* material);
 	std::vector<Texture> processTextureType(const aiMaterial* material, aiTextureType type, std::string typeName);
-	
+	void processNodeHierarchy(const aiNode* node, const glm::mat4 parentTransform);
+
 	/*
 		ATTENTION: Do not pass fileName parameter with full path of texture. Path is already supplied with loadSkinnedModel function.
 		Function itself evaluates a value based on "path + fileName" and then imports texture based on this value.

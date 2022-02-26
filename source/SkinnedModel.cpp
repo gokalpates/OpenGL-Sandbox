@@ -2,7 +2,8 @@
 
 SkinnedModel::SkinnedModel() :
 	m_VAO(0u),
-	m_Buffers {0}
+	m_Buffers {0},
+	m_Scene(nullptr)
 {
 }
 
@@ -18,18 +19,17 @@ bool SkinnedModel::loadSkinnedModel(std::string filePath)
 	info.m_DirPath = calculateDirPath(filePath);
 	bool isSuccess = true;
 
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filePath, ASSIMP_LOAD_FLAGS);
+	m_Scene = m_Importer.ReadFile(filePath, ASSIMP_LOAD_FLAGS);
 
-	if (scene)
+	if (m_Scene)
 	{
-		extractInfo(scene);
-		processScene(scene);
+		extractInfo(m_Scene);
+		processScene(m_Scene);
 	}
 	else
 	{
 		isSuccess = false;
-		std::cout << "ERROR: Assimp could not load model: " << importer.GetErrorString() << std::endl;
+		std::cout << "ERROR: Assimp could not load model: " << m_Importer.GetErrorString() << std::endl;
 	}
 
 	loadToVideoMemory();
@@ -78,6 +78,19 @@ uint32_t SkinnedModel::getUniqueBoneCount() const
 {
 	return m_BoneMap.size();
 }
+
+void SkinnedModel::getBoneTransforms(std::vector<glm::mat4>& transforms)
+{
+	transforms.resize(m_BoneInfos.size());
+	glm::mat4 identity(1.f);
+
+	processNodeHierarchy(m_Scene->mRootNode, identity);
+
+	for (size_t i = 0; i < m_BoneInfos.size(); i++)
+	{
+		transforms[i] = m_BoneInfos[i].finalTransform;
+	}
+ }
 
 void SkinnedModel::loadToVideoMemory()
 {
@@ -268,6 +281,12 @@ void SkinnedModel::processSingleBone(const uint32_t meshId, const aiBone* bone)
 {
 	uint32_t boneID = getBoneId(bone);
 
+	if (boneID == m_BoneInfos.size())
+	{
+		BoneInfo info(utils::mat4_cast(bone->mOffsetMatrix));
+		m_BoneInfos.push_back(info);
+	}
+
 	for (size_t i = 0; i < bone->mNumWeights; i++)
 	{
 		const aiVertexWeight& vw = bone->mWeights[i];
@@ -325,6 +344,25 @@ std::vector<SkinnedModel::Texture> SkinnedModel::processTextureType(const aiMate
 	}
 
 	return textures;
+}
+
+void SkinnedModel::processNodeHierarchy(const aiNode* node, const glm::mat4 parentTransform)
+{
+	std::string nodeName(node->mName.C_Str());
+	glm::mat4 nodeTransformation(utils::mat4_cast(node->mTransformation));
+
+	glm::mat4 globalTransformation = parentTransform * nodeTransformation;
+
+	if (m_BoneMap.contains(nodeName))
+	{
+		uint32_t boneIndex = m_BoneMap[nodeName];
+		m_BoneInfos[boneIndex].finalTransform = globalTransformation * m_BoneInfos.at(boneIndex).offsetMatrix;
+	}
+
+	for (size_t i = 0; i < node->mNumChildren; i++)
+	{
+		processNodeHierarchy(node->mChildren[i], globalTransformation);
+	}
 }
 
 uint32_t SkinnedModel::loadTextureFromDisk(std::string path)

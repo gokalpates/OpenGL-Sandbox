@@ -10,21 +10,30 @@ out VS_FS
 {
 	vec2 texCoords;
 	vec3 normal;
-	vec3 localePosition;
 	flat ivec4 boneIds;
 	vec4 weights;
 }vsOut;
+
+const int MAX_BONE_COUNT = 100;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform mat4 bones[MAX_BONE_COUNT];
+
 void main()
 {
-	gl_Position = projection * view * model * vec4(position , 1.f);
+	mat4 boneTransform = bones[boneIds[0]] * weights[0];
+		 boneTransform += bones[boneIds[1]] * weights[1];
+		 boneTransform += bones[boneIds[2]] * weights[2];
+		 boneTransform += bones[boneIds[3]] * weights[3];
+
+	vec4 localePosition = boneTransform * vec4(position, 1.0);
+	gl_Position = projection * view * model * localePosition;
+	
 	vsOut.texCoords = texCoords;
 	vsOut.normal = normal;
-	vsOut.localePosition = position;
 	vsOut.boneIds = boneIds;
 	vsOut.weights = weights;
 }

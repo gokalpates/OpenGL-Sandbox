@@ -66,12 +66,11 @@ int main()
 
     inspectModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
 
-    Shader heat("shaders/skeletalHeatMap.vert", "shaders/skeletalHeatMap.frag");
+    Shader skinnedShader("shaders/skeletalHeatMap.vert", "shaders/skeletalHeatMap.frag");
     SkinnedModel skinnedModel;
     skinnedModel.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
-    
-    uint32_t spacebarCount = 0u;
-    double timer = 0;
+
+    std::vector<glm::mat4> boneTransforms;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -97,22 +96,18 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_X))
             glfwSetWindowShouldClose(window, true);
 
-        if (glfwGetKey(window, GLFW_KEY_SPACE) && (timer > 1))
-        {
-            timer = 0;
-            spacebarCount++;
-            heat.use();
-            heat.setInt("displayBoneIndex", spacebarCount % skinnedModel.getUniqueBoneCount());
-        }
-        timer += deltaTime;
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        heat.use();
+        skinnedShader.use();
         model = glm::mat4(1.f);
-        model = glm::rotate(model, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
-        heat.setAllMat4(model, view, projection);
-        skinnedModel.draw(heat);
+        skinnedShader.setAllMat4(model, view, projection);
+        skinnedModel.getBoneTransforms(boneTransforms);
+        for (size_t i = 0; i < boneTransforms.size(); i++)
+        {
+            std::string uniformName = "bones[" + std::to_string(i) + "]";
+            skinnedShader.setMat4(uniformName.c_str(), boneTransforms[i]);
+        }
+        skinnedModel.draw(skinnedShader);
 
         gridShader.use();
         model = glm::mat4(1.f);
