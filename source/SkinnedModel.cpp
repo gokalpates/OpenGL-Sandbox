@@ -79,12 +79,16 @@ uint32_t SkinnedModel::getUniqueBoneCount() const
 	return m_BoneMap.size();
 }
 
-void SkinnedModel::getBoneTransforms(std::vector<glm::mat4>& transforms)
+void SkinnedModel::getBoneTransforms(std::vector<glm::mat4>& transforms, long double timeInSeconds)
 {
 	transforms.resize(m_BoneInfos.size());
 	glm::mat4 identity(1.f);
 
-	processNodeHierarchy(m_Scene->mRootNode, identity);
+	float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0);
+	float timeInTicks = timeInSeconds * ticksPerSecond;
+	float animationTimeTicks = std::fmod(timeInTicks, (float)m_Scene->mAnimations[0]->mDuration);
+
+	processNodeHierarchy(m_Scene->mRootNode, identity, animationTimeTicks);
 
 	for (size_t i = 0; i < m_BoneInfos.size(); i++)
 	{
@@ -346,10 +350,34 @@ std::vector<SkinnedModel::Texture> SkinnedModel::processTextureType(const aiMate
 	return textures;
 }
 
-void SkinnedModel::processNodeHierarchy(const aiNode* node, const glm::mat4 parentTransform)
+void SkinnedModel::processNodeHierarchy(const aiNode* node, const glm::mat4 parentTransform, float animationTimeTicks)
 {
 	std::string nodeName(node->mName.C_Str());
 	glm::mat4 nodeTransformation(utils::mat4_cast(node->mTransformation));
+
+	//There can be different animations.
+	const aiAnimation* animation = m_Scene->mAnimations[0];
+	const aiNodeAnim* nodeAnim = findNodeAnim(animation, nodeName);
+
+	if (nodeAnim)
+	{
+		aiVector3D scaling;
+		calculateInterpolatedScaling(scaling, animationTimeTicks, nodeAnim);
+		glm::vec3 scalingGLM = glm::vec3(scaling.x, scaling.y, scaling.z);
+		glm::mat4 scalingMatrix = glm::scale(glm::mat4(1.f), scalingGLM);
+		
+		aiQuaternion rotation;
+		calculateInterpolatedRotation(rotation, animationTimeTicks, nodeAnim);
+		glm::quat rotationGLM = utils::quat_cast(rotation);
+		glm::mat4 rotationMatrix = glm::mat4_cast(rotationGLM);
+
+		aiVector3D translation;
+		calculateInterpolatedTranslation(translation, animationTimeTicks, nodeAnim);
+		glm::vec3 translationGLM = glm::vec3(translation.x, translation.y, translation.z);
+		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.f), translationGLM);
+
+		nodeTransformation = translationMatrix * rotationMatrix * scalingMatrix;
+	}
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransformation;
 
@@ -361,8 +389,86 @@ void SkinnedModel::processNodeHierarchy(const aiNode* node, const glm::mat4 pare
 
 	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
-		processNodeHierarchy(node->mChildren[i], globalTransformation);
+		processNodeHierarchy(node->mChildren[i], globalTransformation, animationTimeTicks);
 	}
+}
+
+aiNodeAnim* SkinnedModel::findNodeAnim(const aiAnimation* animation, std::string nodeName)
+{
+	for (size_t i = 0; i < animation->mNumChannels; i++)
+	{
+		aiNodeAnim* node = animation->mChannels[i];
+		std::string nodeAnimName(node->mNodeName.C_Str());
+		if (nodeAnimName == nodeName)
+		{
+			return node;
+		}
+	}
+	return nullptr;
+}
+
+void SkinnedModel::calculateInterpolatedScaling(aiVector3D& scaling, float animationTimeTicks, const aiNodeAnim* node)
+{
+	if (node->mNumScalingKeys == 1)
+	{
+		scaling = node->mScalingKeys[0].mValue;
+		return;
+	}
+
+	uint32_t ScalingIndex = findScaling(animationTimeTicks, node);
+	uint32_t NextScalingIndex = ScalingIndex + 1;
+	float t1 = (float)node->mScalingKeys[ScalingIndex].mTime;
+	float t2 = (float)node->mScalingKeys[NextScalingIndex].mTime;
+	float DeltaTime = t2 - t1;
+	float Factor = (animationTimeTicks - (float)t1) / DeltaTime;
+	assert(Factor >= 0.0f && Factor <= 1.0f);
+	const aiVector3D& Start = node->mScalingKeys[ScalingIndex].mValue;
+	const aiVector3D& End = node->mScalingKeys[NextScalingIndex].mValue;
+	aiVector3D Delta = End - Start;
+	scaling = Start + Factor * Delta;
+}
+
+void SkinnedModel::calculateInterpolatedRotation(aiQuaternion& rotation, float animationTimeTicks, const aiNodeAnim* node)
+{
+	if (node->mNumRotationKeys == 1) {
+		rotation = node->mRotationKeys[0].mValue;
+		return;
+	}
+
+	uint32_t RotationIndex = findRotation(animationTimeTicks, node);
+	uint32_t NextRotationIndex = RotationIndex + 1;
+
+	float t1 = (float)node->mRotationKeys[RotationIndex].mTime;
+	float t2 = (float)node->mRotationKeys[NextRotationIndex].mTime;
+	float DeltaTime = t2 - t1;
+	float Factor = (animationTimeTicks - t1) / DeltaTime;
+	assert(Factor >= 0.0f && Factor <= 1.0f);
+	const aiQuaternion& StartRotationQ = node->mRotationKeys[RotationIndex].mValue;
+	const aiQuaternion& EndRotationQ = node->mRotationKeys[NextRotationIndex].mValue;
+	aiQuaternion::Interpolate(rotation, StartRotationQ, EndRotationQ, Factor);
+	rotation = StartRotationQ;
+	rotation.Normalize();
+}
+
+void SkinnedModel::calculateInterpolatedTranslation(aiVector3D& translation, float animationTimeTicks, const aiNodeAnim* node)
+{
+	if (node->mNumPositionKeys == 1) {
+		translation = node->mPositionKeys[0].mValue;
+		return;
+	}
+
+	uint32_t PositionIndex = findTranslation(animationTimeTicks, node);
+	uint32_t NextPositionIndex = PositionIndex + 1;
+
+	float t1 = (float)node->mPositionKeys[PositionIndex].mTime;
+	float t2 = (float)node->mPositionKeys[NextPositionIndex].mTime;
+	float DeltaTime = t2 - t1;
+	float Factor = (animationTimeTicks - t1) / DeltaTime;
+	assert(Factor >= 0.0f && Factor <= 1.0f);
+	const aiVector3D& Start = node->mPositionKeys[PositionIndex].mValue;
+	const aiVector3D& End = node->mPositionKeys[NextPositionIndex].mValue;
+	aiVector3D Delta = End - Start;
+	translation = Start + Factor * Delta;
 }
 
 uint32_t SkinnedModel::loadTextureFromDisk(std::string path)
@@ -417,4 +523,41 @@ uint32_t SkinnedModel::getBoneId(const aiBone* bone)
 		m_BoneMap[boneName] = m_BoneMap.size();
 		return m_BoneMap[boneName];
 	}
+}
+
+uint32_t SkinnedModel::findScaling(float animationTimeTicks, const aiNodeAnim* node)
+{
+	for (uint32_t i = 0; i < node->mNumScalingKeys - 1; i++) {
+		float t = (float)node->mScalingKeys[i + 1].mTime;
+		if (animationTimeTicks < t)
+		{
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+uint32_t SkinnedModel::findRotation(float animationTimeTicks, const aiNodeAnim* node)
+{
+	for (uint32_t i = 0; i < node->mNumRotationKeys - 1; i++) {
+		float t = (float)node->mRotationKeys[i + 1].mTime;
+		if (animationTimeTicks < t) {
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+uint32_t SkinnedModel::findTranslation(float animationTimeTicks, const aiNodeAnim* node)
+{
+	for (uint32_t i = 0; i < node->mNumPositionKeys - 1; i++) {
+		float t = (float)node->mPositionKeys[i + 1].mTime;
+		if (animationTimeTicks < t) {
+			return i;
+		}
+	}
+
+	return 0;
 }

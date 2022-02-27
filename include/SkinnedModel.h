@@ -27,7 +27,7 @@ public:
 	bool loadSkinnedModel(std::string path);
 	void draw(Shader& shader);
 	uint32_t getUniqueBoneCount() const;
-	void getBoneTransforms(std::vector<glm::mat4>& transforms);
+	void getBoneTransforms(std::vector<glm::mat4>& transforms, long double timeInSeconds);
 
 private:
 
@@ -155,8 +155,17 @@ private:
 
 	void processMeshMaterial(const aiMaterial* material);
 	std::vector<Texture> processTextureType(const aiMaterial* material, aiTextureType type, std::string typeName);
-	void processNodeHierarchy(const aiNode* node, const glm::mat4 parentTransform);
+	void processNodeHierarchy(const aiNode* node, const glm::mat4 parentTransform, float animationTimeTicks);
 
+	aiNodeAnim* findNodeAnim(const aiAnimation* animation, std::string nodeName);
+
+	void calculateInterpolatedScaling(aiVector3D& scaling, float animationTimeTicks, const aiNodeAnim* node);
+	void calculateInterpolatedRotation(aiQuaternion& rotation, float animationTimeTicks, const aiNodeAnim* node);
+	void calculateInterpolatedTranslation(aiVector3D& translation, float animationTimeTicks, const aiNodeAnim* node);
+
+	uint32_t findScaling(float animationTimeTicks, const aiNodeAnim* node);
+	uint32_t findRotation(float animationTimeTicks, const aiNodeAnim* node);
+	uint32_t findTranslation(float animationTimeTicks, const aiNodeAnim* node);
 	/*
 		ATTENTION: Do not pass fileName parameter with full path of texture. Path is already supplied with loadSkinnedModel function.
 		Function itself evaluates a value based on "path + fileName" and then imports texture based on this value.

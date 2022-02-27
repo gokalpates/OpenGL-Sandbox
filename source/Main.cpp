@@ -17,6 +17,7 @@
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
+long double applicationStartTime = 0.0, applicationCurrentTime = 0.0, applicationElapsedTime;
 int fpsToShow = 0;
 size_t counter = 0;
 
@@ -64,14 +65,14 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
-    inspectModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
-
     Shader skinnedShader("shaders/skeletalHeatMap.vert", "shaders/skeletalHeatMap.frag");
     SkinnedModel skinnedModel;
     skinnedModel.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
 
     std::vector<glm::mat4> boneTransforms;
 
+    //Note that it is in milliseconds.
+    applicationStartTime = glfwGetTime() * 1000.f;
     while (!glfwWindowShouldClose(window))
     {
         currentFrame = glfwGetTime();
@@ -101,7 +102,8 @@ int main()
         skinnedShader.use();
         model = glm::mat4(1.f);
         skinnedShader.setAllMat4(model, view, projection);
-        skinnedModel.getBoneTransforms(boneTransforms);
+        long double animationTimeSeconds = applicationElapsedTime / 1000.0;
+        skinnedModel.getBoneTransforms(boneTransforms, animationTimeSeconds);
         for (size_t i = 0; i < boneTransforms.size(); i++)
         {
             std::string uniformName = "bones[" + std::to_string(i) + "]";
@@ -117,9 +119,11 @@ int main()
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         glfwSwapBuffers(window);
         counter++;
-    }
 
-    releaseResources();
+        //------------------TIME UNTIL APP STARTS------------------
+        applicationCurrentTime = glfwGetTime() * 1000.f;
+        applicationElapsedTime = applicationCurrentTime - applicationStartTime;
+    }
 
     glfwDestroyWindow(window);
     glfwTerminate();
