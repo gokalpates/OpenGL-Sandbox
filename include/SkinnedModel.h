@@ -138,6 +138,7 @@ private:
 
 	std::map<std::string, uint32_t> m_BoneMap;
 	std::vector<MeshInfo> m_MeshInfos;
+	glm::mat4 m_GlobalInverseTransform;
 
 	void loadToVideoMemory();
 	void clear();

@@ -23,6 +23,8 @@ bool SkinnedModel::loadSkinnedModel(std::string filePath)
 
 	if (m_Scene)
 	{
+		m_GlobalInverseTransform = utils::mat4_cast(m_Scene->mRootNode->mTransformation);
+		m_GlobalInverseTransform = glm::inverse(m_GlobalInverseTransform);
 		extractInfo(m_Scene);
 		processScene(m_Scene);
 	}
@@ -384,7 +386,7 @@ void SkinnedModel::processNodeHierarchy(const aiNode* node, const glm::mat4 pare
 	if (m_BoneMap.contains(nodeName))
 	{
 		uint32_t boneIndex = m_BoneMap[nodeName];
-		m_BoneInfos[boneIndex].finalTransform = globalTransformation * m_BoneInfos.at(boneIndex).offsetMatrix;
+		m_BoneInfos[boneIndex].finalTransform = m_GlobalInverseTransform * globalTransformation * m_BoneInfos.at(boneIndex).offsetMatrix;
 	}
 
 	for (size_t i = 0; i < node->mNumChildren; i++)
