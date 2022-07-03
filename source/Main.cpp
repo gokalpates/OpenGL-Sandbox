@@ -65,12 +65,6 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
-    Shader skinnedShader("shaders/skeletalHeatMap.vert", "shaders/skeletalHeatMap.frag");
-    SkinnedModel skinnedModel;
-    skinnedModel.loadSkinnedModel("resources/objects/boblamp/bob_lamp_update.md5mesh");
-
-    std::vector<glm::mat4> boneTransforms;
-
     //Note that it is in milliseconds.
     applicationStartTime = glfwGetTime() * 1000.f;
     while (!glfwWindowShouldClose(window))
@@ -98,18 +92,6 @@ int main()
             glfwSetWindowShouldClose(window, true);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        skinnedShader.use();
-        model = glm::mat4(1.f);
-        skinnedShader.setAllMat4(model, view, projection);
-        long double animationTimeSeconds = applicationElapsedTime / 1000.0;
-        skinnedModel.getBoneTransforms(boneTransforms, animationTimeSeconds);
-        for (size_t i = 0; i < boneTransforms.size(); i++)
-        {
-            std::string uniformName = "bones[" + std::to_string(i) + "]";
-            skinnedShader.setMat4(uniformName.c_str(), boneTransforms[i]);
-        }
-        skinnedModel.draw(skinnedShader);
 
         gridShader.use();
         model = glm::mat4(1.f);
