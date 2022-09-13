@@ -181,6 +181,27 @@ Shader::Shader(std::filesystem::path vertexShaderPath, std::filesystem::path geo
 	glDeleteShader(fragmentShaderId);
 }
 
+Shader::Shader(std::filesystem::path computeShaderPath) :
+	m_shaderId(0u)
+{
+	/*
+	std::ifstream fileStream(computeShaderPath);
+	if (!fileStream.is_open())
+	{
+		std::cout << "ERROR: Program could not open: " << computeShaderPath << "\n";
+		glfwTerminate();
+		std::exit(EXIT_FAILURE);
+	}
+	std::stringstream computeStream;
+	computeStream << fileStream.rdbuf();
+	std::string computeShaderSource = computeStream.str();
+	const char* vertexSource = computeShaderSource.c_str();
+	fileStream.close();
+	*/
+
+	// TODO: Continue compute shader implementation after upgrading to OGL 4.6 core.
+}
+
 Shader::~Shader()
 {
 	glDeleteProgram(m_shaderId);
