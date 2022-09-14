@@ -256,5 +256,7 @@
     <None Include="shaders\skeletalHeatMap.vert" />
     <None Include="shaders\skeletalHeatMap.frag" />
     <None Include="shaders\compute.comp" />
+    <None Include="shaders\quad.vert" />
+    <None Include="shaders\quad.frag" />
   </ItemGroup>
 </Project>

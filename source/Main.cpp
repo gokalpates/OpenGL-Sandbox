@@ -65,8 +65,20 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
-    //Shader.
+    //Compute shader example.
     Shader computeShader("shaders/compute.comp");
+
+    unsigned int storageTexture = 0u;
+    glGenTextures(1, &storageTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, storageTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, screenWidth, screenHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+    Shader quadShader("shaders/quad.vert", "shaders/quad.frag");
 
     //Note that it is in milliseconds.
     applicationStartTime = glfwGetTime() * 1000.f;
@@ -96,10 +108,21 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        gridShader.use();
-        model = glm::mat4(1.f);
-        gridShader.setAllMat4(model, view, projection);
-        grid.draw(gridShader);
+        //Use compute shader.
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, storageTexture);
+        glBindImageTexture(0, storageTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+        computeShader.use();
+        glDispatchCompute(screenWidth, screenHeight, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        //Use texture that generated in compute shaders.
+        quadShader.use();
+        quadShader.setInt("tex", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, storageTexture);
+        utils::renderQuad();
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         glfwSwapBuffers(window);
