@@ -74,8 +74,8 @@ int main()
     glBindTexture(GL_TEXTURE_2D, storageTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, screenWidth, screenHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
 
     Shader quadShader("shaders/quad.vert", "shaders/quad.frag");
@@ -109,12 +109,23 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Use compute shader.
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, storageTexture);
-        glBindImageTexture(0, storageTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        double cursorX, cursorY;
+        glfwGetCursorPos(window, &cursorX, &cursorY);
+        bool mouseClick = false;
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
+        {
+            mouseClick = true;
+        }
+
+        glm::vec3 mousePosition(cursorX, screenHeight - cursorY, 0.f);
 
         computeShader.use();
-        glDispatchCompute(screenWidth, screenHeight, 1);
+        computeShader.setVec3("mousePos", mousePosition);
+        computeShader.setBool("mouseButtonClick", mouseClick);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, storageTexture);
+        glBindImageTexture(1, storageTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+        glDispatchCompute(80,45,1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         //Use texture that generated in compute shaders.
@@ -132,6 +143,8 @@ int main()
         applicationCurrentTime = glfwGetTime() * 1000.f;
         applicationElapsedTime = applicationCurrentTime - applicationStartTime;
     }
+
+    glDeleteTextures(1, &storageTexture);
 
     glfwDestroyWindow(window);
     glfwTerminate();

@@ -1,12 +1,27 @@
 #version 460 core
 
 //Local workgroup size. i.e invocation count per workgroup.
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
-layout (rgba32f) uniform image2D image;
+layout (rgba32f, binding = 1) uniform image2D image;
+
+uniform vec3 mousePos;
+uniform bool mouseButtonClick;
 
 void main()
 {
-	vec4 color = vec4(1.f,0.f,0.f,1.f);
+	//Previous color.
+	vec4 color = imageLoad(image, ivec2(gl_GlobalInvocationID.xy));
+
+	if(!mouseButtonClick)
+	{
+		color = vec4(0.f,0.f,0.f,1.f);
+	}
+
+	float len = length(mousePos - gl_GlobalInvocationID);
+		if(len < 10.f)
+			color = vec4(1.f);
+	
+	//New color.
 	imageStore(image, ivec2(gl_GlobalInvocationID.xy), color);
 }
