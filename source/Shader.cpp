@@ -184,7 +184,6 @@ Shader::Shader(std::filesystem::path vertexShaderPath, std::filesystem::path geo
 Shader::Shader(std::filesystem::path computeShaderPath) :
 	m_shaderId(0u)
 {
-	/*
 	std::ifstream fileStream(computeShaderPath);
 	if (!fileStream.is_open())
 	{
@@ -195,11 +194,38 @@ Shader::Shader(std::filesystem::path computeShaderPath) :
 	std::stringstream computeStream;
 	computeStream << fileStream.rdbuf();
 	std::string computeShaderSource = computeStream.str();
-	const char* vertexSource = computeShaderSource.c_str();
+	const char* computeSource = computeShaderSource.c_str();
 	fileStream.close();
-	*/
+	
+	unsigned int computeShaderId = glCreateShader(GL_COMPUTE_SHADER);
+	glShaderSource(computeShaderId, 1, &computeSource, nullptr);
+	glCompileShader(computeShaderId);
+	int success = 0;
+	glGetShaderiv(computeShaderId, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		char infoLog[512];
+		glGetShaderInfoLog(computeShaderId, 512, nullptr, infoLog);
+		std::cout << "ERROR: OpenGL could not compile compute shader: " << infoLog << "\n";
+		glfwTerminate();
+		std::exit(EXIT_FAILURE);
+	}
 
-	// TODO: Continue compute shader implementation after upgrading to OGL 4.6 core.
+	m_shaderId = glCreateProgram();
+	glAttachShader(m_shaderId, computeShaderId);
+	glLinkProgram(m_shaderId);
+	success = 0;
+	glGetProgramiv(m_shaderId, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		char infoLog[512];
+		glGetProgramInfoLog(m_shaderId, 512, nullptr, infoLog);
+		std::cout << "ERROR: OpenGL could not link compute shaders: " << infoLog << "\n";
+		glfwTerminate();
+		std::exit(EXIT_FAILURE);
+	}
+
+	glDeleteShader(computeShaderId);
 }
 
 Shader::~Shader()
