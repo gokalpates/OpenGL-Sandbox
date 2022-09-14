@@ -255,5 +255,6 @@
     <None Include="shaders\aoLightPass.frag" />
     <None Include="shaders\skeletalHeatMap.vert" />
     <None Include="shaders\skeletalHeatMap.frag" />
+    <None Include="shaders\compute.comp" />
   </ItemGroup>
 </Project>

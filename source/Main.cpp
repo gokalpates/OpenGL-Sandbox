@@ -65,6 +65,9 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
 
+    //Shader.
+    Shader computeShader("shaders/compute.comp");
+
     //Note that it is in milliseconds.
     applicationStartTime = glfwGetTime() * 1000.f;
     while (!glfwWindowShouldClose(window))
