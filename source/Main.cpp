@@ -12,8 +12,6 @@
 #include "Grid.h"
 #include "Debug.h"
 #include "Utilities.h"
-#include "BoneInspector.h"
-#include "SkinnedModel.h"
 
 float deltaTime = 0.0, currentFrame, lastFrame = 0.f;
 float diffTime = 0.0, currentTime, lastTime = 0.f;
@@ -51,11 +49,12 @@ int main()
     glm::mat4 model = glm::mat4(1.f);
     glm::mat4 view = glm::mat4(1.f);
     glm::vec3 viewPosition = glm::vec3(0.f);
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)(screenWidth) / (float)(screenHeight), 0.1f, 100.f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)(screenWidth) / (float)(screenHeight), 0.1f, 10000.f);
 
     //Camera.
     Camera camera(window);
-    
+    camera.setCameraSpeed(65.f);    
+
     //Grid system.
     Grid grid;
     Shader gridShader("shaders/grid.vert", "shaders/grid.frag");
@@ -64,21 +63,81 @@ int main()
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
+    glPatchParameteri(GL_PATCH_VERTICES, 4);
 
-    //Compute shader example.
-    Shader computeShader("shaders/compute.comp");
+    //Terrain shader.
+    Shader terrainTesselationShader("shaders/terrain.vert",
+        "shaders/terrain.tesc",
+        "shaders/terrain.tese",
+        "shaders/terrain.frag");
 
-    unsigned int storageTexture = 0u;
-    glGenTextures(1, &storageTexture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, storageTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, screenWidth, screenHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+    //Height map.
+    int width = 0, height = 0, nrc = 0;
+    unsigned char* data = stbi_load("resources/iceland_heightmap.png", &width, &height, &nrc, 0);
+    
+    unsigned int heightmap = 0;
+    glGenTextures(1, &heightmap);
+    glBindTexture(GL_TEXTURE_2D, heightmap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-    Shader quadShader("shaders/quad.vert", "shaders/quad.frag");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+
+    //Tesselation patches.
+    std::vector<float> vertices;
+    unsigned patchCount = 20;
+    for (unsigned i = 0; i <= patchCount - 1; i++)
+    {
+        for (unsigned j = 0; j <= patchCount - 1; j++)
+        {
+            vertices.push_back(-width / 2.0f + width * i / (float)patchCount); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * j / (float)patchCount); // v.z
+            vertices.push_back(i / (float)patchCount); // u
+            vertices.push_back(j / (float)patchCount); // v
+
+            vertices.push_back(-width / 2.0f + width * (i + 1) / (float)patchCount); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * j / (float)patchCount); // v.z
+            vertices.push_back((i + 1) / (float)patchCount); // u
+            vertices.push_back(j / (float)patchCount); // v
+
+            vertices.push_back(-width / 2.0f + width * i / (float)patchCount); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float)patchCount); // v.z
+            vertices.push_back(i / (float)patchCount); // u
+            vertices.push_back((j + 1) / (float)patchCount); // v
+
+            vertices.push_back(-width / 2.0f + width * (i + 1) / (float)patchCount); // v.x
+            vertices.push_back(0.0f); // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float)patchCount); // v.z
+            vertices.push_back((i + 1) / (float)patchCount); // u
+            vertices.push_back((j + 1) / (float)patchCount); // v
+        }
+    }
+
+    unsigned int terrainVAO = 0;
+    glGenVertexArrays(1, &terrainVAO);
+    glBindVertexArray(terrainVAO);
+
+    unsigned int terrainVBO = 0;
+    glGenBuffers(1, &terrainVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    
+    glEnableVertexAttribArray(0u);
+    glVertexAttribPointer(0u, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+    
+    glEnableVertexAttribArray(1u);
+    glVertexAttribPointer(1u, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glBindVertexArray(0u);
 
     //Note that it is in milliseconds.
     applicationStartTime = glfwGetTime() * 1000.f;
@@ -107,33 +166,15 @@ int main()
             glfwSetWindowShouldClose(window, true);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        //Use compute shader.
-        double cursorX, cursorY;
-        glfwGetCursorPos(window, &cursorX, &cursorY);
-        bool mouseClick = false;
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
-        {
-            mouseClick = true;
-        }
-
-        glm::vec3 mousePosition(cursorX, screenHeight - cursorY, 0.f);
-
-        computeShader.use();
-        computeShader.setVec3("mousePos", mousePosition);
-        computeShader.setBool("mouseButtonClick", mouseClick);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, storageTexture);
-        glBindImageTexture(1, storageTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-        glDispatchCompute(80,45,1);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-        //Use texture that generated in compute shaders.
-        quadShader.use();
-        quadShader.setInt("tex", 0);
+        //------------------RENDERPASS START-----------------------------
+        model = glm::mat4(1.f);
+        terrainTesselationShader.use();
+        terrainTesselationShader.setAllMat4(model, view, projection);
+        terrainTesselationShader.setInt("heightmap", 0);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, storageTexture);
-        utils::renderQuad();
+        glBindTexture(GL_TEXTURE_2D, heightmap);
+        glBindVertexArray(terrainVAO);
+        glDrawArrays(GL_PATCHES, 0, 4 * patchCount * patchCount);
 
         //------------------SWAP BUFFERS AND RENDER GUI------------------
         glfwSwapBuffers(window);
@@ -143,8 +184,6 @@ int main()
         applicationCurrentTime = glfwGetTime() * 1000.f;
         applicationElapsedTime = applicationCurrentTime - applicationStartTime;
     }
-
-    glDeleteTextures(1, &storageTexture);
 
     glfwDestroyWindow(window);
     glfwTerminate();

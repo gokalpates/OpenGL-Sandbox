@@ -258,5 +258,9 @@
     <None Include="shaders\compute.comp" />
     <None Include="shaders\quad.vert" />
     <None Include="shaders\quad.frag" />
+    <None Include="shaders\terrain.vert" />
+    <None Include="shaders\terrain.tesc" />
+    <None Include="shaders\terrain.tese" />
+    <None Include="shaders\terrain.frag" />
   </ItemGroup>
 </Project>
