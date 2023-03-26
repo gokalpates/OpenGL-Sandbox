@@ -64,6 +64,7 @@ int main()
     glViewport(0, 0, screenWidth, screenHeight);
     glEnable(GL_DEPTH_TEST);
     glPatchParameteri(GL_PATCH_VERTICES, 4);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //Terrain shader.
     Shader terrainTesselationShader("shaders/terrain.vert",
