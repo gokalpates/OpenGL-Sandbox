@@ -262,5 +262,7 @@
     <None Include="shaders\terrain.tesc" />
     <None Include="shaders\terrain.tese" />
     <None Include="shaders\terrain.frag" />
+    <None Include="shaders\infiniteGrid.vert" />
+    <None Include="shaders\infiniteGrid.frag" />
   </ItemGroup>
 </Project>

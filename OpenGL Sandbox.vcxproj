@@ -227,6 +227,8 @@
     <None Include="shaders\debugFramebuffer.vert" />
     <None Include="shaders\fboKernelBlur.frag" />
     <None Include="shaders\geometryPass.vert" />
+    <None Include="shaders\infiniteGrid.frag" />
+    <None Include="shaders\infiniteGrid.vert" />
     <None Include="shaders\lightingPass.frag" />
     <None Include="shaders\parallax.frag" />
     <None Include="shaders\parallax.vert" />
